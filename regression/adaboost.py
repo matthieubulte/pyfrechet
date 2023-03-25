@@ -107,7 +107,7 @@ class AdaBoost(WeightingRegressor):
 
         return self
 
-    def weights_for(self, x):
+    def _weights_for(self, x):
         y_weights = np.zeros(len(self.y_train))
         for (i, estimator) in enumerate(self.estimators):
             est_weights = estimator.weights_for(x)+0

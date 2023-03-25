@@ -7,10 +7,11 @@ class Wasserstein1D(MetricSpace):
     def __init__(self):
         pass
 
-    def d(self, x, y):
+    def _d(self, x, y):
         return np.sqrt(np.trapz((x - y)**2, Wasserstein1D.GRID))
     
     def _frechet_mean(self, y, w):
+        # todo: project on q1 < ... < q_{grid_size}
         return np.dot(w, y)
 
     def __str__(self):

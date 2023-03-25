@@ -1,4 +1,5 @@
-import autograd.numpy as np
+import autograd.numpy as anp
+import numpy as np
 import pymanopt
 import pymanopt.manifolds
 import pymanopt.optimizers
@@ -9,15 +10,16 @@ class Sphere(MetricSpace):
         assert dim==1
         self.dim = dim
 
-    def d(self, x, y):
+    def _d(self, x, y):
         return np.sum(np.square(np.arccos(np.dot(x,y.T))), axis=0)
     
     def _frechet_mean(self, y, w):
         manifold = pymanopt.manifolds.Sphere(2)
 
+        def _d(x, y): return anp.sum(anp.square(anp.arccos(anp.dot(x,y.T))), axis=0)
+        
         @pymanopt.function.autograd(manifold)
-        def cost(om):
-            return np.dot(w, self.d(om.reshape((1,2)), y))
+        def cost(om): return anp.dot(w, _d(om.reshape((1,2)), y))
 
         problem = pymanopt.Problem(manifold, cost)
         optimizer = pymanopt.optimizers.SteepestDescent(verbosity=0)

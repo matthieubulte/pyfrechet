@@ -6,7 +6,7 @@ from .weighting_regressor import WeightingRegressor
 
 
 class BaggedRegressor(WeightingRegressor):
-    def __init__(self, estimator: WeightingRegressor, n_estimators: int, bootstrap_fraction: float, n_jobs=1):
+    def __init__(self, estimator: WeightingRegressor, n_estimators: int, bootstrap_fraction: float, n_jobs=-2):
         self.estimator = estimator
         self.n_estimators = n_estimators
         self.estimators = []
@@ -36,13 +36,13 @@ class BaggedRegressor(WeightingRegressor):
         super().fit(X, y)
         return self._fit_seq(X, y) if self.n_jobs == 1 or not self.n_jobs else self._fit_par(X, y)
 
-    def weights_for(self, x):
+    def _weights_for(self, x):
         assert len(self.estimators) > 0
         weights = self.estimators[0].weights_for(x)
         for estimator in self.estimators[1:]:
             est_weights = estimator.weights_for(x)
             weights += est_weights
-        return weights / self.n_estimators
+        return weights
 
     def clone(self):
         return type(self)(self.estimator, self.n_estimators, self.bootstrap_fraction, self.n_jobs)

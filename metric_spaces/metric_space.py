@@ -8,8 +8,21 @@ class MetricSpace(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def d(self, x, y) -> float:
+    def _d(self, x, y) -> float:
         pass
+
+    def d(self, x, y):
+        x_is_md = type(x).__name__ == 'MetricData'
+        y_is_md = type(y).__name__ == 'MetricData'
+        if not (x_is_md or y_is_md):
+            return self._d(x, y)
+        elif x_is_md and y_is_md:
+            assert len(x) == len(y)
+            return np.array([ self._d(x[i], y[i]) for i in range(len(x)) ])
+        elif y_is_md:
+            return np.array([ self._d(x, y[i]) for i in range(len(y)) ])
+        else:
+            return self.d(y, x)
 
     @abstractmethod
     def _frechet_mean(self, y, w=None):

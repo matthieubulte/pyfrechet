@@ -11,7 +11,7 @@ class FisherRaoAmplitude(MetricSpace):
     def __init__(self, grid):
         self.grid = grid
 
-    def d(self, x, y):
+    def _d(self, x, y):
         data_x = x.data_matrix[0,...,0]
         data_y = y.data_matrix[0,...,0]
         # elastic_distance returns (Dy: amplitude distance, Dx: phase distance)
