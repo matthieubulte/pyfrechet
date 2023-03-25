@@ -1,16 +1,20 @@
 # https://scholar.google.de/scholar?start=30&q=adaboost+theoretical+guarantees&hl=en&as_sdt=0,5&as_vis=1
 
 import numpy as np
-from mrf import MetricTree
-from metric_spaces.utils import mat_sel_idx
 
-class AdaBoost:
-    def __init__(self, n_estimators, learning_rate, M):
+from metric_spaces import MetricData
+from .weighting_regressor import WeightingRegressor, TWeightingRegressor
+
+
+class AdaBoost(WeightingRegressor):
+    def __init__(self, estimator:WeightingRegressor, n_estimators, learning_rate):
         self.learning_rate = learning_rate
+        self.estimator = estimator
+        self.estimators = []
+        self.estimator_weights = None
         self.n_estimators = n_estimators
-        self.M = M
 
-    def _boost(self, X, y, D, sample_weight, is_last):
+    def _boost(self, X, y: MetricData, sample_weight, is_last):
         bootstrap_idx = np.random.choice(
             np.arange(X.shape[0]),
             size=X.shape[0],
@@ -18,17 +22,18 @@ class AdaBoost:
             p=sample_weight
         )
         X_ = X[bootstrap_idx, :]
-        D_ = mat_sel_idx(D, bootstrap_idx)
+        y_ = y[bootstrap_idx]
 
         # this might cause a bug at prediction because of how the selection work!
-        estimator = MetricTree().fit(X_, D_, np.ones(X.shape[0]))
+        estimator = self.estimator.clone().fit(X_, y_)
 
         def __pred(i):
-            w = estimator.select_for(X[i, :])
-            return self.M.frechet_mean(y, w=w)
+            # be careful here because the weights don't match
+            w = estimator.weights_for(X[i, :])
+            return y.frechet_mean(w)
 
         # todo: vectorize
-        error_vect = [ self.M.d(self.M.index(y, i), __pred(i))**2 for i in range(X.shape[0]) ]
+        error_vect = [ y.M.d(y[i], __pred(i))**2 for i in range(X.shape[0]) ]
         sample_mask = sample_weight > 0
         masked_sample_weight = sample_weight[sample_mask]
         masked_error_vector = error_vect[sample_mask]
@@ -57,10 +62,9 @@ class AdaBoost:
 
         return estimator, sample_weight, estimator_weight, estimator_error
 
-    def fit(self, X, y, D):
+    def fit(self, X, y: MetricData):
+        super().fit(X, y)
         sample_weight = np.ones(X.shape[0]) / X.shape[0]
-        
-        self.y_train = y
         self.estimators = []
         self.estimator_weights = np.zeros(self.n_estimators, dtype=np.float64)
 
@@ -70,7 +74,7 @@ class AdaBoost:
             sample_weight = np.clip(sample_weight, a_min=epsilon, a_max=None)
             
             # Boosting step
-            estimator, sample_weight, estimator_weight, estimator_error = self._boost(X, y, D, sample_weight, iboost+1==self.n_estimators)
+            estimator, sample_weight, estimator_weight, estimator_error = self._boost(X, y, sample_weight, iboost+1==self.n_estimators)
 
             # Early termination
             if sample_weight is None:
@@ -103,13 +107,12 @@ class AdaBoost:
 
         return self
 
-    def get_weights(self, x):
-        y_weights = np.zeros(self.y_train.shape[0])
-        for (i, tree) in enumerate(self.estimators):
-            tree_sel = tree.select_for(x)+0
-            y_weights += self.estimator_weights[i] * tree_sel / np.sum(tree_sel)
+    def weights_for(self, x):
+        y_weights = np.zeros(len(self.y_train))
+        for (i, estimator) in enumerate(self.estimators):
+            est_weights = estimator.weights_for(x)+0
+            y_weights += self.estimator_weights[i] * est_weights / np.sum(est_weights)
         return y_weights
 
-    def predict(self, x):
-        return self.M.frechet_mean(self.y_train, w=self.get_weights(x))
-
+    def clone(self) -> TWeightingRegressor:
+        return AdaBoost(self.estimator, self.n_estimators, self.learning_rate)
