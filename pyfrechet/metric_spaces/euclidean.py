@@ -1,7 +1,7 @@
 import numpy as np
 from .metric_space import MetricSpace
 
-class Euclidian(MetricSpace):
+class Euclidean(MetricSpace):
     def __init__(self, dim):
         self.dim = dim
     
@@ -12,5 +12,5 @@ class Euclidian(MetricSpace):
         return w.dot(y)
     
     def __str__(self):
-        return f'Euclidian(dim={self.dim})'
+        return f'Euclidean(dim={self.dim})'
     
