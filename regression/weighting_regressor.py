@@ -3,26 +3,32 @@ from typing import TypeVar
 import numpy as np
 from metric_spaces import MetricData
 
-TWeightingRegressor = TypeVar("TWeightingRegressor", bound="WeightingRegressor")
+T = TypeVar("T", bound="WeightingRegressor")
 
 class WeightingRegressor(metaclass=ABCMeta):
 
-    @abstractmethod
-    def _weights_for(self, x) -> np.ndarray:
-        pass
+    def _normalize_weights(self, weights, sum_to_one=False, clip=False, clip_allow_neg=False):
+        if clip:
+            if clip_allow_neg:
+                clipped = np.clip(np.abs(weights), a_min=np.finfo(weights.dtype).eps, a_max=None)
+                weights[clipped == 0.0] = 0.0
+            else:
+                weights = np.clip(weights, a_min=np.finfo(weights.dtype).eps, a_max=None)
+        if sum_to_one:
+            weights /= weights.sum()
+        return weights
 
     def _predict_one(self, x):        
         return self.y_train.frechet_mean(self.weights_for(x))
     
     @abstractmethod
-    def fit(self, X, y: MetricData) -> TWeightingRegressor:
+    def fit(self:T, X, y: MetricData) -> T:
         self.y_train = y
         return self
     
+    @abstractmethod
     def weights_for(self, x) -> np.ndarray:
-        weights = self._weights_for(x)
-        weights = np.clip(weights, a_min=np.finfo(weights.dtype).eps, a_max=None)
-        return weights / weights.sum()
+        pass
 
     def predict(self, x):
         if len(x.shape) == 1 or x.shape[0] == 1:
@@ -36,5 +42,5 @@ class WeightingRegressor(metaclass=ABCMeta):
             return MetricData(self.y_train.M, y_pred)
         
     @abstractmethod
-    def clone(self) -> TWeightingRegressor:
+    def clone(self:T) -> T:
         pass

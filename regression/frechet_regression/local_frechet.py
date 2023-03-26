@@ -14,7 +14,7 @@ class LocalFrechet(WeightingRegressor):
         self.x_train = X
         return self
 
-    def _weights_for(self, x):
+    def weights_for(self, x):
         N = self.x_train.shape[0]
         dx = x - self.x_train
         ks = self.base_kernel(np.linalg.norm(dx, axis=1) / self.bw)
@@ -23,7 +23,8 @@ class LocalFrechet(WeightingRegressor):
         mu2 = (ks[:, None] * dx).T.dot(dx) / N
         mu2_chol = cho_factor(mu2)
 
-        return np.sum(ks[:, None] * (1 - mu1) * cho_solve(mu2_chol, dx.T).T, axis=1)
+        weights = np.sum(ks[:, None] * (1 - mu1) * cho_solve(mu2_chol, dx.T).T, axis=1)
+        return self._normalize_weights(weights, sum_to_one=True, clip=True, clip_allow_neg=True)
 
     def clone(self):
         return LocalFrechet(self.base_kernel, self.bw)

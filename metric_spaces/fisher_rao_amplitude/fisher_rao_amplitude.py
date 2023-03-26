@@ -4,7 +4,7 @@ import scipy
 from skfda.misc.operators import SRSF
 from skfda.exploratory.stats._fisher_rao import _elastic_alignment_array
 from skfda._utils import normalize_scale, invert_warping
-from .metric_space import MetricSpace
+from ..metric_space import MetricSpace
 from .fisher_rao_warping_mean import fisher_rao_warping_mean
 
 class FisherRaoAmplitude(MetricSpace):

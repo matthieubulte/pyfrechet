@@ -115,12 +115,12 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
                 queue.append(node.right)
         return self
 
-    def _weights_for(self, x):
+    def weights_for(self, x):
         assert self.root_node
         node = self.root_node
         while True:
             if not node.split:
-                return 1.0 * node.selector
+                return self._normalize_weights(node.selector, sum_to_one=True, clip=True)
             elif x[node.split.feature_idx] < node.split.threshold:
                 node = node.left
             else:

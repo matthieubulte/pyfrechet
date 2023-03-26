@@ -13,8 +13,9 @@ class NadarayaWatson(WeightingRegressor):
         self.x_train = X
         return self
 
-    def _weights_for(self, x):
-        return self.base_kernel(np.linalg.norm(x - self.x_train, axis=1) / self.bw)
+    def weights_for(self, x):
+        weights = self.base_kernel(np.linalg.norm(x - self.x_train, axis=1) / self.bw)
+        return self._normalize_weights(weights, sum_to_one=True, clip=True)
     
     def clone(self):
         return NadarayaWatson(self.base_kernel, self.bw)

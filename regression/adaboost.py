@@ -3,7 +3,7 @@
 import numpy as np
 
 from metric_spaces import MetricData
-from .weighting_regressor import WeightingRegressor, TWeightingRegressor
+from .weighting_regressor import WeightingRegressor
 
 
 class AdaBoost(WeightingRegressor):
@@ -11,7 +11,7 @@ class AdaBoost(WeightingRegressor):
         self.learning_rate = learning_rate
         self.estimator = estimator
         self.estimators = []
-        self.estimator_weights = None
+        self.estimator_weights = []
         self.n_estimators = n_estimators
 
     def _boost(self, X, y: MetricData, sample_weight, is_last):
@@ -107,12 +107,12 @@ class AdaBoost(WeightingRegressor):
 
         return self
 
-    def _weights_for(self, x):
-        y_weights = np.zeros(len(self.y_train))
+    def weights_for(self, x):
+        weights = np.zeros(len(self.y_train))
         for (i, estimator) in enumerate(self.estimators):
             est_weights = estimator.weights_for(x)+0
-            y_weights += self.estimator_weights[i] * est_weights / np.sum(est_weights)
-        return y_weights
+            weights += self.estimator_weights[i] * est_weights / np.sum(est_weights)
+        return self._normalize_weights(weights / self.n_estimators, clip=True)
 
-    def clone(self) -> TWeightingRegressor:
+    def clone(self):
         return AdaBoost(self.estimator, self.n_estimators, self.learning_rate)
