@@ -22,8 +22,13 @@ class Sphere(MetricSpace):
         def cost(om): return anp.dot(w, _d(om.reshape((1,2)), y))
 
         problem = pymanopt.Problem(manifold, cost)
-        optimizer = pymanopt.optimizers.SteepestDescent(verbosity=0)
-        result = optimizer.run(problem)
+        optimizer = pymanopt.optimizers.TrustRegions(verbosity=0)
+
+        # initial y 
+        y_init = w.dot(y)
+        y_init /= np.linalg.norm(y_init)
+
+        result = optimizer.run(problem, initial_point=y_init)
         return result.point
 
     def __str__(self):
