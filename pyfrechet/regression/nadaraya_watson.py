@@ -1,6 +1,6 @@
 import numpy as np
 from .weighting_regressor import WeightingRegressor
-from src.metric_spaces import MetricData
+from pyfrechet.metric_spaces import MetricData
 
 class NadarayaWatson(WeightingRegressor):
     def __init__(self, base_kernel, bw=1.0):

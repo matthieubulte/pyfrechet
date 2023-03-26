@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.metric_spaces import MetricData
+from pyfrechet.metric_spaces import MetricData
 from ..weighting_regressor import WeightingRegressor
 
 class LocalFrechet(WeightingRegressor):

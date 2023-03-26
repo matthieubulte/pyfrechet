@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import TypeVar
 import numpy as np
-from src.metric_spaces import MetricData
+from pyfrechet.metric_spaces import MetricData
 
 T = TypeVar("T", bound="WeightingRegressor")
 

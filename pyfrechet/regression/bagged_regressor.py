@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
-from src.metric_spaces import MetricData
-from src.metric_spaces.utils import *
+from pyfrechet.metric_spaces import MetricData
+from pyfrechet.metric_spaces.utils import *
 from .weighting_regressor import WeightingRegressor
 
 

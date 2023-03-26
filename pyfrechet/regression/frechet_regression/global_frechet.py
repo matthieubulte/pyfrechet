@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
 
-from src.metric_spaces import MetricData
+from pyfrechet.metric_spaces import MetricData
 from ..weighting_regressor import WeightingRegressor
 
 class GlobalFrechet(WeightingRegressor):
