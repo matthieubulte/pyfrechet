@@ -52,4 +52,3 @@ class FisherRaoAmplitude(MetricSpace):
 
     def __str__(self):
         return 'FisherRaoAmplitude'
-

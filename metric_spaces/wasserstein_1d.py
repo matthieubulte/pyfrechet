@@ -3,7 +3,7 @@ from .metric_space import MetricSpace
 from sklearn.isotonic import isotonic_regression
 
 class Wasserstein1D(MetricSpace):
-    GRID = np.linspace(0, 1, 102)[1:-1]
+    GRID = np.linspace(0, 1, 100)
 
     def __init__(self):
         pass
