@@ -1,5 +1,6 @@
 import numpy as np
 from .metric_space import MetricSpace
+from sklearn.isotonic import isotonic_regression
 
 class Wasserstein1D(MetricSpace):
     GRID = np.linspace(0, 1, 102)[1:-1]
@@ -11,8 +12,8 @@ class Wasserstein1D(MetricSpace):
         return np.sqrt(np.trapz((x - y)**2, Wasserstein1D.GRID))
     
     def _frechet_mean(self, y, w):
-        # todo: project on q1 < ... < q_{grid_size}
-        return np.dot(w, y)
+        # Computed the (weighted) averaged quantiles, then project to make sure that q is increasing
+        return isotonic_regression(np.dot(w, y))
 
     def __str__(self):
         return 'Wasserstein'
