@@ -16,7 +16,7 @@ class LocalFrechet(WeightingRegressor):
 
     def weights_for(self, x):
         N = self.x_train.shape[0]
-        dx = x - self.x_train
+        dx = self.x_train - x
         ks = self.base_kernel(np.linalg.norm(dx, axis=1) / self.bw)
         
         mu1 = ks.dot(dx) / N

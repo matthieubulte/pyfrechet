@@ -19,13 +19,13 @@ N = 200; eps = 0.5
 x_train, y_train = gen_data(N, eps)
 x_test, y_test = gen_data(100, eps)
 
-global_frechet = GlobalFrechet().fit(x_train, y_train)
-local_frechet = LocalFrechet(gaussian, 0.02).fit(x_train, y_train)
+# global_frechet = GlobalFrechet().fit(x_train, y_train)
+local_frechet = LocalFrechet(gaussian, 0.01).fit(x_train, y_train)
 
-preds = [
-    global_frechet.predict(x_test), 
-    local_frechet.predict(x_test)
-]
+# preds = [
+    # global_frechet.predict(x_test), 
+local_frechet._predict_one(x_test[0,:])
+# ]
 
 errs = np.zeros((2, x_test.shape[0]))
 errs[0,:] = Sphere(1).d(y_test, preds[0])

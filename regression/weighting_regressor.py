@@ -8,14 +8,21 @@ T = TypeVar("T", bound="WeightingRegressor")
 class WeightingRegressor(metaclass=ABCMeta):
 
     def _normalize_weights(self, weights, sum_to_one=False, clip=False, clip_allow_neg=False):
-        if clip:
-            if clip_allow_neg:
-                clipped = np.clip(np.abs(weights), a_min=np.finfo(weights.dtype).eps, a_max=None)
-                weights[clipped == 0.0] = 0.0
-            else:
-                weights = np.clip(weights, a_min=np.finfo(weights.dtype).eps, a_max=None)
         if sum_to_one:
             weights /= weights.sum()
+        
+        if clip:
+            eps = np.finfo(weights.dtype).eps
+            if clip_allow_neg:
+                clipped = np.clip(np.abs(weights), a_min=eps, a_max=None)
+                weights[clipped == eps] = 0.0
+            else:
+                weights = np.clip(weights, a_min=eps, a_max=None)
+                weights[weights == eps] = 0.0
+        
+        if sum_to_one:
+            weights /= weights.sum()
+        
         return weights
 
     def _predict_one(self, x):        
