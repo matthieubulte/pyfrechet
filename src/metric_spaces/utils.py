@@ -1,13 +1,6 @@
 from joblib import Parallel, delayed
 import numpy as np
 
-# def D_mat(M, y):
-#     N = y.shape[0]
-#     D = np.zeros((N,N))
-#     for i in range(N):
-#         D[i, i+1:] = M.d(M.index(y[[i],:], y[i+1:,])**2
-#     return D + D.T
-
 def D_mat(M, y):
     N = y.shape[0]
     D = np.zeros((N,N))

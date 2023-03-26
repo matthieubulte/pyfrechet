@@ -1,0 +1,12 @@
+autograd==1.5
+fdasrsf==2.3.12
+ipywidgets==8.0.4
+joblib==1.2.0
+matplotlib==3.6.2
+numpy==1.23.5
+pandas==1.5.3
+pymanopt==2.1.1
+scikit_fda==0.8
+scikit_learn==1.2.2
+scipy==1.10.1
+tqdm==4.64.1

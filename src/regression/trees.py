@@ -4,8 +4,8 @@ from typing import Generator
 
 from sklearn.cluster import KMeans
 
-from metric_spaces import MetricData
-from metric_spaces.utils import *
+from src.metric_spaces import MetricData
+from src.metric_spaces.utils import *
 from .weighting_regressor import WeightingRegressor
 
 
