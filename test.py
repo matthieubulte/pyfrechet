@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 from ipywidgets import *
 
 import numpy as np
-from metric_spaces import MetricData
-from metric_spaces.sphere import Sphere, r2_to_angle
-from regression.frechet_regression import LocalFrechet, GlobalFrechet
-from regression.kernels import epanechnikov, gaussian
-from metric_spaces.euclidian import Euclidian
+from src.metric_spaces import MetricData
+from src.metric_spaces.sphere import Sphere, r2_to_angle
+from src.regression.frechet_regression import LocalFrechet, GlobalFrechet
+from src.regression.kernels import epanechnikov, gaussian
+from src.metric_spaces.euclidian import Euclidian
 
 M = Euclidian(1)
 m = lambda x: 5 + 5*x[:,0]**2 + np.sin(20 * x[:,0]) - 10*x[:,0]**3 

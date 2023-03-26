@@ -11,7 +11,7 @@ class Sphere(MetricSpace):
         self.dim = dim
 
     def _d(self, x, y):
-        return np.sum(np.square(np.arccos(np.dot(x,y.T))), axis=0)
+        return np.sqrt(np.sum(np.square(np.arccos(np.dot(x,y.T))), axis=0))
     
     def _frechet_mean(self, y, w):
         manifold = pymanopt.manifolds.Sphere(2)

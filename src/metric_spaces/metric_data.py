@@ -2,7 +2,7 @@ import numpy as np
 from typing import Union, Any, TypeVar
 from .utils import D_mat_par, mat_sel_idx, mat_sel, coalesce_weights
 
-TMetricData = TypeVar("TMetricData", bound="MetricData")
+T = TypeVar("T", bound="MetricData")
 
 class MetricData:
     def __init__(self, M, data, distances=None):
@@ -35,7 +35,7 @@ class MetricData:
         weights = coalesce_weights(weights, self)
         return np.min(self.distances.dot(weights))
 
-    def __getitem__(self, key) -> Union[Any, TMetricData]:
+    def __getitem__(self, key) -> Union[Any, T]:
         subset = self.M.index(self.data, key)
         if type(key) is int:
             return subset
