@@ -35,19 +35,19 @@ print(f'MSE = {(test_error**2).mean()}')
 The package supports the following metric spaces:
 - Euclidean spaces $\mathbb{R}^d$
 - Spheres $S^{d-1}$
-- 1D Wasserstein spaces with the $L_2$ distance
-- Functions equipped with the Fisher-Rao Phase distance
+- 1D Wasserstein spaces with the $L_2$ distance[^4]
+- Functions equipped with the Fisher-Rao Phase distance[^2]
 - Correlation matrices equipped with the Frobenius distance
 
 To add support for more metric spaces, simply create a subclass of the `MetricSpace` class and provide an implementation of the distance function and the weighted Fréchet mean in that space.
 
 ## Methods
 The following regression methods are (partially) implemented:
-- Global Fréchet regression
-- Local Fréchet regression (only with $p=1$ predictor)
+- Global Fréchet regression[^1]
+- Local Fréchet regression[^1] (only with $p=1$ predictor)
 - Nadaraya-Watson 
 - K Nearest Neighbors
-- Random forest (with 4 different splitting schemes - 2x2)
+- Random forest[^3] (with 4 different splitting schemes - 2x2)
 
 ## Testing
 
@@ -60,5 +60,12 @@ make test
 The package is licensed under the BSD 3-Clause License. A copy of the [license](https://github.com/matthieubulte/pyfrechet/blob/main/LICENSE) can be found along with the code.
 
 
-
 ⚠️ **This package is under heavy development, meaning some example notebooks might not be updated to match the rest of the codebase, and documentation and references to original sources may be missing** ⚠️
+
+[^1]: Petersen, A. and Müller, H.-G. (2019). Fréchet regression for random objects with Euclidean predictors. The Annals of Statistics, 47(2), 691--719.
+
+[^2]: Srivastava, A., & Klassen, E. P. (2016). Functional and shape data analysis (Vol. 1). New York: Springer.
+
+[^3]: Qiu, R., Yu, Z., & Zhu, R. (2022). Random Forests Weighted Local Fréchet Regression with Theoretical Guarantee. arXiv preprint arXiv:2202.04912.
+
+[^4]: Panaretos, V. M., & Zemel, Y. (2020). An invitation to statistics in Wasserstein space (p. 147). Springer Nature.
