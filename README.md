@@ -49,4 +49,16 @@ The following regression methods are (partially) implemented:
 - K Nearest Neighbors
 - Random forest (with 4 different splitting schemes - 2x2)
 
+## Testing
+
+After installing the dependencies, you can run the test suite from the root of the project with the `test` rule:
+```
+make test
+```
+
+## License
+The package is licensed under the BSD 3-Clause License. A copy of the [license](https://github.com/matthieubulte/pyfrechet/blob/main/LICENSE) can be found along with the code.
+
+
+
 ⚠️ **This package is under heavy development, meaning some example notebooks might not be updated to match the rest of the codebase, and documentation and references to original sources may be missing** ⚠️
