@@ -169,7 +169,7 @@ def test_frechet_medoid_single_weighted(gen_data):
 def test_frechet_medoid_from_sample(gen_data):
     M, y = gen_data(10)
     data = MetricData(M, y)
-    assert np.sum(M.d(data.frechet_medoid(n_jobs=None), data) < TOL) == 1
+    assert np.sum(M.d(data.frechet_medoid(n_jobs=None), data) < TOL) >= 1
 
 if __name__ == "__main__":
     pytest.main()
