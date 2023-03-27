@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Union, Any, TypeVar
-from .utils import D_mat_par, mat_sel_idx, mat_sel, coalesce_weights
+import numbers
+from .utils import D_mat_par, D_mat, mat_sel_idx, mat_sel, coalesce_weights
 
 T = TypeVar("T", bound="MetricData")
 
@@ -13,10 +14,10 @@ class MetricData:
 
     def compute_distances(self, n_jobs=-2):
         if self.distances is None:
-            self.distances = D_mat_par(self.M, self.data, n_jobs)
-
-    def d(self, i, j):
-        return self.distances[i,j] if self.distances else self.M.d(self[i], self[j])
+            if n_jobs is None or n_jobs == 1:
+                self.distances = D_mat(self.M, self.data)
+            else:
+                self.distances = D_mat_par(self.M, self.data, n_jobs)
 
     def frechet_mean(self, weights=None):
         return self.M.frechet_mean(self.data, weights)
@@ -24,24 +25,25 @@ class MetricData:
     def frechet_var(self, weights=None):
         return self.M.frechet_var(self.data, weights)
     
-    def frechet_medoid(self, weights=None):
-        self.compute_distances()
+    def frechet_medoid(self, weights=None, n_jobs=-2):
+        self.compute_distances(n_jobs=n_jobs)
         weights = coalesce_weights(weights, self)
         idx = np.argmin(self.distances.dot(weights))
         return self[idx]
 
-    def frechet_medoid_var(self, weights=None):
-        self.compute_distances()
+    def frechet_medoid_var(self, weights=None, n_jobs=-2):
+        self.compute_distances(n_jobs=n_jobs)
         weights = coalesce_weights(weights, self)
         return np.min(self.distances.dot(weights))
 
     def __getitem__(self, key) -> Union[Any, T]:
         subset = self.M.index(self.data, key)
-        if type(key) is int:
+        if isinstance(key, numbers.Integral):
             return subset
         elif self.distances is None:
             return MetricData(self.M, subset)
         else:
+            key = key if type(key) is np.ndarray else np.array(key)
             subdist = mat_sel(self.distances, key) if key.dtype == 'bool' else mat_sel_idx(self.distances, key)
             return MetricData(self.M, subset, subdist)
         
