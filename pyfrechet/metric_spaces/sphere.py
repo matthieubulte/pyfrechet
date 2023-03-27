@@ -7,14 +7,13 @@ from .metric_space import MetricSpace
 
 class Sphere(MetricSpace):
     def __init__(self, dim):
-        assert dim==1
         self.dim = dim
 
     def _d(self, x, y):
         return np.sqrt(np.sum(np.square(np.arccos(np.dot(x,y.T))), axis=0))
     
     def _frechet_mean(self, y, w):
-        manifold = pymanopt.manifolds.Sphere(2)
+        manifold = pymanopt.manifolds.Sphere(self.dim)
 
         def _d(x, y): return anp.sum(anp.square(anp.arccos(anp.dot(x,y.T))), axis=0)
         

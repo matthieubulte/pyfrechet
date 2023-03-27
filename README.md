@@ -34,7 +34,7 @@ print(f'MSE = {(test_error**2).mean()}')
 ## Metric Spaces
 The package supports the following metric spaces:
 - Euclidean spaces $\mathbb{R}^d$
-- Spheres $S^{d-1}$ (currently, only for $d=1$)
+- Spheres $S^{d-1}$
 - 1D Wasserstein spaces with the $L_2$ distance
 - Functions equipped with the Fisher-Rao Phase distance
 - Correlation matrices equipped with the Frobenius distance
