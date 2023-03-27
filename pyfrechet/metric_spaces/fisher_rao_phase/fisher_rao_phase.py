@@ -7,7 +7,7 @@ from skfda._utils import normalize_scale, invert_warping
 from ..metric_space import MetricSpace
 from .fisher_rao_warping_mean import fisher_rao_warping_mean
 
-class FisherRaoAmplitude(MetricSpace):
+class FisherRaoPhase(MetricSpace):
     def __init__(self, grid):
         self.grid = grid
 
@@ -51,4 +51,4 @@ class FisherRaoAmplitude(MetricSpace):
         return y[i]
 
     def __str__(self):
-        return 'FisherRaoAmplitude'
+        return 'FisherRaoPhase'
