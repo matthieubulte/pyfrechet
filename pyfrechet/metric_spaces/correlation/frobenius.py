@@ -1,6 +1,6 @@
 import numpy as np
 from ..metric_space import MetricSpace
-from .nearest_correlation.nearest_correlation import nearcorr
+from .corr_nearest import corr_nearest
 
 class CorrFroebenius(MetricSpace):
     def __init__(self, dim):
@@ -11,7 +11,7 @@ class CorrFroebenius(MetricSpace):
     
     def _frechet_mean(self, y, w):
         B = (w[:,None,None] * y).sum(axis=0)
-        return nearcorr(B)
+        return corr_nearest(B)
     
     def index(self, y, i):
         return y[i, :, :]

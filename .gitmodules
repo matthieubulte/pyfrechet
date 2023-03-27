@@ -1,3 +1,0 @@
-[submodule "nearest_correlation"]
-	path = pyfrechet/metric_spaces/correlation/nearest_correlation
-	url = https://github.com/mikecroucher/nearest_correlation.git
