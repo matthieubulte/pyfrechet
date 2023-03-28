@@ -16,12 +16,12 @@ class Sphere(MetricSpace):
         elif x_d_y < -1.0 + np.finfo(x.dtype).eps:
             return np.pi
         
-        return np.sqrt(np.sum(np.square(np.arccos(x_d_y)), axis=0))
+        return np.arccos(x_d_y).sum(axis=0)
     
     def _frechet_mean(self, y, w):
         manifold = pymanopt.manifolds.Sphere(self.dim)
 
-        def _d(x, y): return anp.sum(anp.square(anp.arccos(anp.dot(x,y.T))), axis=0)
+        def _d(x, y): return anp.arccos(anp.dot(x,y.T)).sum(axis=0)
         
         @pymanopt.function.autograd(manifold)
         def cost(om): return anp.dot(w, _d(om.reshape((1,self.dim)), y))
