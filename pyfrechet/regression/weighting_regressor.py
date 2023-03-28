@@ -2,10 +2,11 @@ from abc import ABCMeta, abstractmethod
 from typing import TypeVar
 import numpy as np
 from pyfrechet.metric_spaces import MetricData
+from sklearn.base import BaseEstimator
 
 T = TypeVar("T", bound="WeightingRegressor")
 
-class WeightingRegressor(metaclass=ABCMeta):
+class WeightingRegressor(BaseEstimator, metaclass=ABCMeta):
 
     def _normalize_weights(self, weights, sum_to_one=False, clip=False, clip_allow_neg=False):
         if sum_to_one:
@@ -47,7 +48,3 @@ class WeightingRegressor(metaclass=ABCMeta):
             for i in range(1, x.shape[0]):
                 y_pred[i,:] = self._predict_one(x[i,:])
             return MetricData(self.y_train.M, y_pred)
-        
-    @abstractmethod
-    def clone(self:T) -> T:
-        pass

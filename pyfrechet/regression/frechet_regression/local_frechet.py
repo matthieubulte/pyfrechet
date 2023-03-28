@@ -2,9 +2,10 @@ import numpy as np
 
 from pyfrechet.metric_spaces import MetricData
 from ..weighting_regressor import WeightingRegressor
+from ..kernels import gaussian
 
 class LocalFrechet(WeightingRegressor):
-    def __init__(self, base_kernel, bw):
+    def __init__(self, base_kernel=gaussian, bw=1.0):
         self.base_kernel = base_kernel
         self.bw = bw
 
@@ -35,6 +36,3 @@ class LocalFrechet(WeightingRegressor):
         # mu2_chol = cho_factor(mu2)
         # weights = np.sum(ks[:, None] * (1 - mu1) * cho_solve(mu2_chol, dx.T).T, axis=1)
         # return self._normalize_weights(weights[:,0], sum_to_one=True, clip=True, clip_allow_neg=True)
-
-    def clone(self):
-        return LocalFrechet(self.base_kernel, self.bw)

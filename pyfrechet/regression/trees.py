@@ -126,9 +126,6 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
             else:
                 node = node.right
 
-    def clone(self):
-        return type(self)(self.min_split_size)
-
 
 class MedoidTree(MedoidVarMixin, GreedySplitMixin, Tree):
     pass
