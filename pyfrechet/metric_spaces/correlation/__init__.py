@@ -1,1 +1,1 @@
-from .frobenius import CorrFroebenius
+from .frobenius import CorrFrobenius
