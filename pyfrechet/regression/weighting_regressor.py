@@ -27,11 +27,11 @@ class WeightingRegressor(BaseEstimator, metaclass=ABCMeta):
         return weights
 
     def _predict_one(self, x):        
-        return self.y_train.frechet_mean(self.weights_for(x))
+        return self.y_train_.frechet_mean(self.weights_for(x))
     
     @abstractmethod
     def fit(self:T, X, y: MetricData) -> T:
-        self.y_train = y
+        self.y_train_ = y
         return self
     
     @abstractmethod
@@ -47,4 +47,4 @@ class WeightingRegressor(BaseEstimator, metaclass=ABCMeta):
             y_pred[0,:] = y0
             for i in range(1, x.shape[0]):
                 y_pred[i,:] = self._predict_one(x[i,:])
-            return MetricData(self.y_train.M, y_pred)
+            return MetricData(self.y_train_.M, y_pred)

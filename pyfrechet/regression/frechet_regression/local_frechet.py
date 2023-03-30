@@ -13,12 +13,12 @@ class LocalFrechet(WeightingRegressor):
         assert X.shape[1] == 1 # See weights_for
 
         super().fit(X, y)
-        self.x_train = X
+        self.x_train_ = X
         return self
 
     def weights_for(self, x):
-        N = self.x_train.shape[0]
-        dx = self.x_train - x
+        N = self.x_train_.shape[0]
+        dx = self.x_train_ - x
         ks = self.base_kernel(np.linalg.norm(dx, axis=1) / self.bw) / self.bw
         
         mu0 = ks.mean()
