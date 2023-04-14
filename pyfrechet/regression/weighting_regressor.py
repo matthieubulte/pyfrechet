@@ -3,9 +3,8 @@ from typing import TypeVar
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from metric_spaces import MetricData
-from metrics import mean_squared_error
-from sklearn.metrics._regression import _assemble_r2_explained_variance
+from pyfrechet.metric_spaces import MetricData
+from pyfrechet.metrics import r2_score
 
 T = TypeVar("T", bound="WeightingRegressor")
 
@@ -34,7 +33,7 @@ class WeightingRegressor(RegressorMixin, BaseEstimator, metaclass=ABCMeta):
     
     @abstractmethod
     def fit(self:T, X, y: MetricData) -> T:
-        X, y = check_X_y(X, y)
+        X, _ = check_X_y(X, y.data, multi_output=True)
         self.y_train_ = y
         return self
     
@@ -56,21 +55,5 @@ class WeightingRegressor(RegressorMixin, BaseEstimator, metaclass=ABCMeta):
                 y_pred[i,:] = self._predict_one(x[i,:])
             return MetricData(self.y_train_.M, y_pred)
         
-    def score(self, X, y: MetricData, sample_weight=None, multioutput="uniform_average", force_finite=True,):
-        y_pred = self.predict(X)
-        y_bar = y.frechet_mean(sample_weight)
-        mse = mean_squared_error(y.M)
-
-        numerator = mse(y_true, y_pred, sample_weight=sample_weight)
-        denominator = mse(y_true, y_bar, sample_weight=sample_weight)
-
-        return _assemble_r2_explained_variance(
-            numerator=numerator,
-            denominator=denominator,
-            n_outputs=y_true.shape[1],
-            multioutput=multioutput,
-            force_finite=force_finite,
-        )
-
-        # base_err = 
-
+    def score(self, X, y: MetricData, sample_weight=None, force_finite=True,):
+        return r2_score(y, self.predict(X), sample_weight=sample_weight, force_finite=force_finite)

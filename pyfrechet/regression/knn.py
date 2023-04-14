@@ -14,7 +14,7 @@ class KNearestNeighbours(WeightingRegressor):
         return self
 
     def weights_for(self, x):
-        mask = np.zeros(len(self.y_train))
-        neighbors_idx = self.nn.kneighbors([x], self.n_neighbors, False)[0]
+        mask = np.zeros(len(self.y_train_))
+        neighbors_idx = self.nn.kneighbors(np.array(x).reshape(1, -1), self.n_neighbors, False)[0]
         mask[neighbors_idx] = 1.0
         return self._normalize_weights(mask, sum_to_one=True)
