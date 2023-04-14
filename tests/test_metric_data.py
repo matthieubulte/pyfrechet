@@ -9,16 +9,21 @@ from pyfrechet.metric_spaces import *
 
 def gen_euclidean(n): return Euclidean(5), np.random.rand(n*5).reshape((n, 5))
 
-def gen_matrices(n):
+def gen_corr_matrices(n):
+    def random_corr_matrix(dim):
+        A = np.random.randn(dim, dim)
+        cov_matrix = np.dot(A, A.T)
+        std_devs = np.sqrt(np.diag(cov_matrix))
+        return cov_matrix / np.outer(std_devs, std_devs)
+
     dim = 5
-    y = np.random.rand(n*dim*dim).reshape((n,dim,dim))
-    y = np.array([ y[i,:,:].T.dot(y[i,:,:]) for i in range(n) ])
-    return CorrFroebenius(5), y
+    y = np.array([ random_corr_matrix(dim) for i in range(n) ])
+    return CorrFrobenius(5), y
 
 def gen_sphere(n): 
     dim = 4
     y = np.random.rand(n*dim).reshape((n, dim))
-    return Sphere(dim), y / np.linalg.norm(y, axis=1)[:,None]
+    return Sphere(dim-1), y / np.linalg.norm(y, axis=1)[:,None]
 
 def gen_fr_phase(n):
     # normal pdf with random mean/var
@@ -39,7 +44,7 @@ TOL = 1e-6
 GENERATORS = [
     gen_sphere,
     gen_euclidean,
-    gen_matrices,
+    gen_corr_matrices,
     gen_wasserstein,
     gen_fr_phase
 ]

@@ -9,7 +9,7 @@ from sklearn.metrics._regression import _assemble_r2_explained_variance
 
 T = TypeVar("T", bound="WeightingRegressor")
 
-class WeightingRegressor(RegressorMixin, BaseEstimator metaclass=ABCMeta):
+class WeightingRegressor(RegressorMixin, BaseEstimator, metaclass=ABCMeta):
 
     def _normalize_weights(self, weights, sum_to_one=False, clip=False, clip_allow_neg=False):
         if sum_to_one:
@@ -72,5 +72,5 @@ class WeightingRegressor(RegressorMixin, BaseEstimator metaclass=ABCMeta):
             force_finite=force_finite,
         )
 
-        base_err = 
+        # base_err = 
 
