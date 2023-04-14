@@ -28,7 +28,7 @@ def gen_sphere(N, m_type='contant', eps=0.1):
     return x, MetricData(M, y)
 
 
-REGRESSORS = [KNearestNeighbours(n_neighbors=10), NadarayaWatson(bw=0.1), LocalFrechet(bw=0.1), GlobalFrechet()]
+REGRESSORS = [GlobalFrechet(), KNearestNeighbours(n_neighbors=10), NadarayaWatson(bw=0.05), LocalFrechet(bw=0.05)]
 
 
 @pytest.mark.parametrize("regressor", REGRESSORS)
@@ -56,7 +56,7 @@ def test_can_fit_linear(regressor):
     assert mse(fitted.predict(X_test), y_test) < 0.1
 
 
-@pytest.mark.parametrize("regressor", [KNearestNeighbours(n_neighbors=10), NadarayaWatson(bw=0.05), LocalFrechet(bw=0.05)])
+@pytest.mark.parametrize("regressor", REGRESSORS[1:])
 def test_can_fit_nonlinear(regressor):
     X_train, y_train = gen_sphere(10_000, m_type='nonlinear')
     X_test, y_test = gen_sphere(100, m_type='nonlinear')
