@@ -25,6 +25,9 @@ class Node:
 
 
 class MedoidVarMixin:
+    def _should_precomute_distances(self):
+        return True
+
     @staticmethod
     def _var(y: MetricData):
         return y.frechet_medoid_var()
@@ -40,7 +43,7 @@ class KMeansSplitMixin:
     @staticmethod
     def _propose_splits(X_j):
         kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(X_j.reshape((X_j.shape[0], 1)))
-        assert kmeans.labels_
+        assert not kmeans.labels_ is None
         sel = kmeans.labels_.astype(bool)
         if kmeans.cluster_centers_[0, 0] < kmeans.cluster_centers_[1, 0]:
             split_val = (np.max(X_j[sel]) + np.min(X_j[~sel])) / 2
@@ -60,6 +63,9 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
     def __init__(self, min_split_size=5):
         self.min_split_size = min_split_size
         self.root_node = None
+
+    def _should_precomute_distances(self):
+        return False
 
     @abstractmethod
     def _var(self, y):
@@ -96,6 +102,9 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
     def fit(self, X, y: MetricData, basemask=None):
         super().fit(X, y)
         N = X.shape[0]
+
+        if self._should_precomute_distances():
+            y.compute_distances()
 
         if basemask is None:
             basemask = np.repeat(True, N)

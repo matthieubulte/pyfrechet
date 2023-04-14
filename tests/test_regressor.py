@@ -9,6 +9,7 @@ from pyfrechet.metric_spaces import *
 from pyfrechet.regression.knn import KNearestNeighbours
 from pyfrechet.regression.kernels import NadarayaWatson
 from pyfrechet.regression.frechet_regression import GlobalFrechet, LocalFrechet
+from pyfrechet.regression.trees import MedoidTree, KMeansMedoidTree, CartTree, KMeansCartTree
 from pyfrechet.metrics import mse
 
 def gen_sphere(N, m_type='contant', eps=0.1):
@@ -28,7 +29,13 @@ def gen_sphere(N, m_type='contant', eps=0.1):
     return x, MetricData(M, y)
 
 
-REGRESSORS = [GlobalFrechet(), KNearestNeighbours(n_neighbors=10), NadarayaWatson(bw=0.05), LocalFrechet(bw=0.05)]
+REGRESSORS = [
+    GlobalFrechet(), LocalFrechet(bw=0.05),
+    KNearestNeighbours(n_neighbors=10),
+    NadarayaWatson(bw=0.05),
+    MedoidTree(), KMeansMedoidTree(),
+    # CartTree(), KMeansCartTree() # these are too slow to run in tests
+]
 
 
 @pytest.mark.parametrize("regressor", REGRESSORS)
@@ -58,7 +65,7 @@ def test_can_fit_linear(regressor):
 
 @pytest.mark.parametrize("regressor", REGRESSORS[1:])
 def test_can_fit_nonlinear(regressor):
-    X_train, y_train = gen_sphere(10_000, m_type='nonlinear')
+    X_train, y_train = gen_sphere(1000, m_type='nonlinear')
     X_test, y_test = gen_sphere(100, m_type='nonlinear')
 
     fitted = clone(regressor).fit(X_train, y_train)
