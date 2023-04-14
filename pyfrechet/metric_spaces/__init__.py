@@ -6,3 +6,4 @@ from .correlation import CorrFrobenius
 from .wasserstein_1d import Wasserstein1D
 from .fisher_rao_phase import FisherRaoPhase
 from .network import NetworkCholesky
+from .riemannian_manifold import RiemannianManifold

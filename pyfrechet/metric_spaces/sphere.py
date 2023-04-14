@@ -10,21 +10,13 @@ class Sphere(MetricSpace):
         self.dim = dim
 
     def _d(self, x, y):
-        x_d_y = np.dot(x,y.T)
-        if x_d_y > 1.0 - np.finfo(x.dtype).eps:
-            return 0.0
-        elif x_d_y < -1.0 + np.finfo(x.dtype).eps:
-            return np.pi
-        
-        return np.arccos(x_d_y).sum(axis=0)
+        return anp.maximum(-1, anp.minimum(1, anp.arccos(anp.dot(x,y.T)).sum(axis=0)))
     
     def _frechet_mean(self, y, w):
         manifold = pymanopt.manifolds.Sphere(self.dim)
 
-        def _d(x, y): return anp.arccos(anp.dot(x,y.T)).sum(axis=0)
-        
         @pymanopt.function.autograd(manifold)
-        def cost(om): return anp.dot(w, _d(om.reshape((1,self.dim)), y))
+        def cost(om): return anp.dot(w, self._d(om.reshape((1,self.dim)), y))
 
         problem = pymanopt.Problem(manifold, cost)
         optimizer = pymanopt.optimizers.TrustRegions(verbosity=0)
