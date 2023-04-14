@@ -12,12 +12,10 @@ Currently, the package only implements regression methods with Euclidean predict
 from sklearn.model_selection import train_test_split
 
 from pyfrechet.metric_spaces import MetricData
-from pyfrechet.metrics import mean_squared_error
 from pyfrechet.metric_spaces.sphere import Sphere
 from pyfrechet.regression.knn import KNearestNeighbours
 
-M = Sphere(dim=3)
-mse = mean_squared_error(M)
+M = Sphere(dim=2)
 
 X, y = random_data(n=300) # Generate random covariates in R^p and responses on the unit sphere S^2
 y = MetricData(M, y) # Wrap the circle data in a MetricData object with the corresponding metric
@@ -26,10 +24,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random
 
 # pyfréchet implements the widely-used scikit-learn estimator API for fitting and evaluating models
 knn = KNearestNeighbours(n_neighbors=5).fit(X_train, y_train)
-test_predictions = knn.predict(X_test)
-
-print(f'MSE = {mse(y_test, test_predictions)}')
-
+print(f'R2 = {knn.score(X_test, y_test)}')
 ```
 
 ## Another example 
@@ -40,29 +35,29 @@ As mentionned above, every estimator is a subclass of the `BaseEstimator` from `
 # Standard imports as above ...
 
 from sklearn.model_selection import GridSearchCV
+from pyfrechet.metrics import mean_squared_error
 from pyfrechet.regression.kernels import NadarayaWatson, gaussian, epanechnikov
 
-M = Sphere(dim=3)
-mse = mean_squared_error(M)
+M = Sphere(dim=2)
 
 X, y = random_data(n=300) # Again, generate random covariates in R^p and responses on the unit sphere S^2
 
 # Define the possible parameter values over which to do the search
 param_grid = {
     'base_kernel': [gaussian, epanechnikov],
-    'bw': np.logspace(-1, 1, 20)
+    'bw': np.logspace(-2, 0, 5)
 }
 
 # Define the Nadaraya-Watson estimator with parameters searched by cross-validation over the grid defined above
 est = GridSearchCV(
     estimator=NadarayaWatson(),
     param_grid=param_grid,
-    scoring=mse
+    scoring=mean_squared_error
 )
 est.fit(X, y)
 
 # This new estimator can be used as any parameters
-est.predict(np.random.rand(p))
+est.predict(np.random.rand(p).reshape((1,-1)))
 
 # And the best estimator can be extracted
 est.best_estimator_
