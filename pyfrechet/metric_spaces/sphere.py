@@ -10,6 +10,7 @@ class Sphere(RiemannianManifold):
         return f'Sphere(dim={self.manifold.dim})'
  
 def r2_to_angle(x):
-    angles = np.arctan2(x[:,1], x[:,0])
-    angles[angles < 0] = angles[angles < 0] + 2 * np.pi
-    return angles
+    return Hypersphere(dim=1).extrinsic_to_angle(x)
+
+def r3_to_angles(x):
+    return Hypersphere(dim=2).extrinsic_to_spherical(x)
