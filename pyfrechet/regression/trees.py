@@ -1,8 +1,8 @@
-from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import Generator
 
 from sklearn.cluster import KMeans
+import scipy
 from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
@@ -19,62 +19,53 @@ class Split:
 
 @dataclass
 class Node:
-    selector: np.ndarray
+    selector: scipy.sparse.base.spmatrix
     split: Split
     left: 'Node'
     right: 'Node'
 
 
-class MedoidVarMixin:
-    def _should_precomute_distances(self):
-        return True
-
-    @staticmethod
-    def _var(y: MetricData):
-        return y.frechet_medoid_var()
-
-
-class CartVarMixin:
-    @staticmethod
-    def _var(y: MetricData):
-        return y.frechet_var()
+def _2means_propose_splits(X_j):
+    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(X_j.reshape((X_j.shape[0], 1)))
+    assert not kmeans.labels_ is None
+    sel = kmeans.labels_.astype(bool)
+    if kmeans.cluster_centers_[0, 0] < kmeans.cluster_centers_[1, 0]:
+        split_val = (np.max(X_j[sel]) + np.min(X_j[~sel])) / 2
+    else:
+        split_val = (np.min(X_j[sel]) + np.max(X_j[~sel])) / 2
+    yield split_val
 
 
-class KMeansSplitMixin:
-    @staticmethod
-    def _propose_splits(X_j):
-        kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(X_j.reshape((X_j.shape[0], 1)))
-        assert not kmeans.labels_ is None
-        sel = kmeans.labels_.astype(bool)
-        if kmeans.cluster_centers_[0, 0] < kmeans.cluster_centers_[1, 0]:
-            split_val = (np.max(X_j[sel]) + np.min(X_j[~sel])) / 2
-        else:
-            split_val = (np.min(X_j[sel]) + np.max(X_j[~sel])) / 2
-        yield split_val
+def _greedy_propose_splits(X_j):
+    for i in range(X_j.shape[0]):
+        yield X_j[i]
 
 
-class GreedySplitMixin:
-    @staticmethod
-    def _propose_splits(X_j):
-        for i in range(X_j.shape[0]):
-            yield X_j[i]
-
-
-class Tree(WeightingRegressor, metaclass=ABCMeta):
-    def __init__(self, min_split_size=5):
+class Tree(WeightingRegressor):
+    def __init__(self, split_type='greedy', impurity_method='cart', min_split_size=5):
+        super().__init__(precompute_distances=impurity_method is 'medoid')
+        
+        # TODO: parameter constraints, see https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/ensemble/_forest.py#L199
         self.min_split_size = min_split_size
+        self.impurity_method = impurity_method
+        self.split_type = split_type
         self.root_node = None
 
-    def _should_precomute_distances(self):
-        return False
-
-    @abstractmethod
     def _var(self, y):
-        pass
-
-    @abstractmethod
+        if self.impurity_method is 'cart':
+            return y.frechet_medoid_var()
+        elif self.impurity_method is 'medoid':
+            return y.frechet_var()
+        else:
+            raise NotImplementedError(f'impurity_method = {self.impurity_method}')
+ 
     def _propose_splits(self, Xj) -> Generator[float, None, None]:
-        pass
+        if self.split_type is 'greedy':
+            return _greedy_propose_splits(Xj)
+        elif self.split_type is '2means':
+            return _2means_propose_splits(Xj)
+        else:
+            raise NotImplementedError(f'split_type = {self.split_type}')
 
     def _find_split(self, X, y: MetricData):
         N, d = X.shape
@@ -103,9 +94,6 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
     def fit(self, X, y: MetricData, basemask=None):
         super().fit(X, y)
         N = X.shape[0]
-
-        if self._should_precomute_distances():
-            y.compute_distances()
 
         if basemask is None:
             basemask = np.repeat(True, N)
@@ -151,19 +139,3 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
                 node = node.left
             else:
                 node = node.right
-        
-
-class MedoidTree(MedoidVarMixin, GreedySplitMixin, Tree):
-    pass
-
-
-class CartTree(CartVarMixin, GreedySplitMixin, Tree):
-    pass
-
-
-class KMeansMedoidTree(MedoidVarMixin, KMeansSplitMixin, Tree):
-    pass
-
-
-class KMeansCartTree(CartVarMixin, KMeansSplitMixin, Tree):
-    pass

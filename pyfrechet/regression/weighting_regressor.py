@@ -10,7 +10,10 @@ T = TypeVar("T", bound="WeightingRegressor")
 
 class WeightingRegressor(RegressorMixin, BaseEstimator, metaclass=ABCMeta):
 
-    def _normalize_weights(self, weights, sum_to_one=False, clip=False, clip_allow_neg=False):
+    def __init__(self, precompute_distances=False):
+        self.precompute_distances = precompute_distances
+
+    def _normalize_weights(self, weights:np.ndarray, sum_to_one=False, clip=False, clip_allow_neg=False) -> np.ndarray:
         if sum_to_one:
             weights /= weights.sum()
         
@@ -35,6 +38,9 @@ class WeightingRegressor(RegressorMixin, BaseEstimator, metaclass=ABCMeta):
     def fit(self:T, X, y: MetricData) -> T:
         X, _ = check_X_y(X, y.data, multi_output=True)
         self.y_train_ = y
+        if self.precompute_distances:
+            y.compute_distances()
+
         return self
     
     @abstractmethod

@@ -14,6 +14,7 @@ def gaussian(u):
 
 class NadarayaWatson(WeightingRegressor):
     def __init__(self, base_kernel=gaussian, bw=1.0):
+        super().__init__(precompute_distances=False)
         self.base_kernel = base_kernel
         self.bw = bw
 

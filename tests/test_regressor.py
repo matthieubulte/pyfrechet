@@ -9,7 +9,8 @@ from pyfrechet.metric_spaces import *
 from pyfrechet.regression.knn import KNearestNeighbours
 from pyfrechet.regression.kernels import NadarayaWatson
 from pyfrechet.regression.frechet_regression import GlobalFrechet, LocalFrechet
-from pyfrechet.regression.trees import MedoidTree, KMeansMedoidTree, CartTree, KMeansCartTree
+from pyfrechet.regression.trees import Tree
+from pyfrechet.regression.bagged_regressor import BaggedRegressor
 from pyfrechet.metrics import mse
 
 def gen_sphere(N, m_type='contant', eps=0.1):
@@ -30,11 +31,13 @@ def gen_sphere(N, m_type='contant', eps=0.1):
 
 
 REGRESSORS = [
-    GlobalFrechet(), LocalFrechet(bw=0.05),
+    GlobalFrechet(), 
+    LocalFrechet(bw=0.05),
     KNearestNeighbours(n_neighbors=10),
     NadarayaWatson(bw=0.05),
-    MedoidTree(), KMeansMedoidTree(),
-    # CartTree(), KMeansCartTree() # these are too slow to run in tests
+    Tree(impurity_method='medoid', split_type='greedy'),
+    Tree(impurity_method='medoid', split_type='2means'),
+    BaggedRegressor(KNearestNeighbours(n_neighbors=10), n_estimators=2)
 ]
 
 

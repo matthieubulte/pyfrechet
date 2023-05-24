@@ -5,6 +5,7 @@ from pyfrechet.metric_spaces import MetricData
 
 class KNearestNeighbours(WeightingRegressor):
     def __init__(self, n_neighbors=3):
+        super().__init__(precompute_distances=False)
         self.n_neighbors = n_neighbors
         self.nn = NearestNeighbors(n_neighbors=n_neighbors)
 

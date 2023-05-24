@@ -1,7 +1,8 @@
 from joblib import Parallel, delayed
 from tqdm import tqdm
-from typing import Optional
+from typing import Optional, Tuple, List
 import sklearn
+import scipy
 from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
@@ -16,8 +17,9 @@ class BaggedRegressor(WeightingRegressor):
                  bootstrap_fraction: float = 0.75,
                  n_jobs=-2):
         self.estimator = estimator
+        self.precompute_distances = estimator.precompute_distances if estimator else False
         self.n_estimators = n_estimators
-        self.estimators = []
+        self.estimators:List[Tuple[scipy.sparse.base.spmatrix, WeightingRegressor]] = []
         self.bootstrap_fraction = bootstrap_fraction
         self.n_jobs = n_jobs
 
@@ -29,7 +31,7 @@ class BaggedRegressor(WeightingRegressor):
 
     def _fit_est(self, X, y):
         mask = self._make_mask(X.shape[0])
-        return (coo_array(mask), sklearn.clone(self.estimator).fit(X[mask, :], y[mask]))
+        return (coo_array(mask), sklearn.clone(self._estimator).fit(X[mask, :], y[mask]))
 
     def _fit_par(self, X, y: MetricData):
         super().fit(X, y)
@@ -44,10 +46,14 @@ class BaggedRegressor(WeightingRegressor):
         return self
 
     def fit(self, X, y: MetricData):
+        assert self.estimator
+        self._estimator = self.estimator
+        
         super().fit(X, y)
+        
         return self._fit_seq(X, y) if self.n_jobs == 1 or not self.n_jobs else self._fit_par(X, y)
 
-    def weights_for(self, x):
+    def weights_for(self, x) -> np.ndarray:
         assert len(self.estimators) > 0
         weights = np.zeros(self.estimators[0][0].shape[1])
         for (sp_mask, estimator) in self.estimators:
