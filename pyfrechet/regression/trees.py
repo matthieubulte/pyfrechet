@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from typing import Generator
 
 from sklearn.cluster import KMeans
-import scipy
-from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
 from pyfrechet.metric_spaces.utils import *
@@ -19,7 +17,7 @@ class Split:
 
 @dataclass
 class Node:
-    selector: scipy.sparse.base.spmatrix
+    selector: np.ndarray
     split: Split
     left: 'Node'
     right: 'Node'
@@ -42,13 +40,20 @@ def _greedy_propose_splits(X_j):
 
 
 class Tree(WeightingRegressor):
-    def __init__(self, split_type='greedy', impurity_method='cart', min_split_size=5):
+    def __init__(self, 
+                 split_type='greedy',
+                 impurity_method='cart',
+                 min_split_size=5,
+                 is_honest=False,
+                 honesty_fraction=0.5):
         super().__init__(precompute_distances=impurity_method is 'medoid')
         
         # TODO: parameter constraints, see https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/ensemble/_forest.py#L199
         self.min_split_size = min_split_size
         self.impurity_method = impurity_method
         self.split_type = split_type
+        self.is_honest = is_honest
+        self.honesty_fraction = honesty_fraction
         self.root_node = None
 
     def _var(self, y):
@@ -93,10 +98,18 @@ class Tree(WeightingRegressor):
 
     def fit(self, X, y: MetricData, basemask=None):
         super().fit(X, y)
+
         N = X.shape[0]
+        # self.train_mask = np.repeat(True, N)
+
+        # if self.is_honest:
+            
+        #     n_train_set = int(self.honesty_fraction * X.shape[0])
+        #     self.train_mask = 
+
 
         if basemask is None:
-            basemask = np.repeat(True, N)
+            basemask = np.arange(N)
 
         root = Node(basemask, None, None, None)
         self.root_node = root
@@ -105,17 +118,16 @@ class Tree(WeightingRegressor):
             node = queue.pop(0)
             split = self._find_split(X[node.selector, :], y[node.selector])
             if split:
-                split_selector = X[:, split.feature_idx] < split.threshold
+                left_selector = node.selector[X[node.selector, split.feature_idx] < split.threshold]
+                right_selector = node.selector[X[node.selector, split.feature_idx] >= split.threshold]
+
                 node.split = split
-                node.left = Node(node.selector & split_selector, None, None, None)
-                node.right = Node(node.selector & (~split_selector), None, None, None)
+                node.left = Node(left_selector, None, None, None)
+                node.right = Node(right_selector, None, None, None)
                 queue.append(node.left)
                 queue.append(node.right)
                 # free up space by removing selectors not needed in the nodes
                 node.selector = None
-            else:
-                # free up space by using a sparse array for the selector
-                node.selector = coo_array(node.selector)
 
         return self
     
@@ -128,13 +140,17 @@ class Tree(WeightingRegressor):
                 queue.append(node.left)
                 queue.append(node.right)
 
+    def _selector_to_weights(self, selector):
+        weights = np.zeros(self.y_train_.shape[0])
+        weights[selector] = 1.0
+        return weights
 
     def weights_for(self, x):
         assert self.root_node
         node = self.root_node
         while True:
             if not node.split:
-                return self._normalize_weights(node.selector.astype(np.float32).toarray()[0,:], sum_to_one=True, clip=True)
+                return self._normalize_weights(self._selector_to_weights(node.selector), sum_to_one=True, clip=True)
             elif x[node.split.feature_idx] < node.split.threshold:
                 node = node.left
             else:

@@ -6,8 +6,8 @@ from pyfrechet.regression.weighting_regressor import WeightingRegressor
 
 class GlobalFrechet(WeightingRegressor):
     def __init__(self):
-        super().__init__(precompute_distances=False)
-        
+        super().__init__()
+
     def fit(self, X, y: MetricData):
         super().fit(X, y)
         self.mu_ = X.mean(axis=0)

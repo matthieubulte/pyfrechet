@@ -2,8 +2,6 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 from typing import Optional, Tuple, List
 import sklearn
-import scipy
-from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
 from pyfrechet.metric_spaces.utils import *
@@ -16,22 +14,21 @@ class BaggedRegressor(WeightingRegressor):
                  n_estimators: int = 100,
                  bootstrap_fraction: float = 0.75,
                  n_jobs=-2):
+        super().__init__()
         self.estimator = estimator
         self.precompute_distances = estimator.precompute_distances if estimator else False
         self.n_estimators = n_estimators
-        self.estimators:List[Tuple[scipy.sparse.base.spmatrix, WeightingRegressor]] = []
+        self.estimators:List[Tuple[np.ndarray, WeightingRegressor]] = []
         self.bootstrap_fraction = bootstrap_fraction
         self.n_jobs = n_jobs
 
     def _make_mask(self, N):
         s = int(self.bootstrap_fraction * N)
-        mask = np.repeat(False, N)
-        mask[np.random.choice(N, s, replace=False)] = True
-        return mask
+        return np.random.choice(N, s, replace=False)
 
     def _fit_est(self, X, y):
         mask = self._make_mask(X.shape[0])
-        return (coo_array(mask), sklearn.clone(self._estimator).fit(X[mask, :], y[mask]))
+        return (mask, sklearn.clone(self._estimator).fit(X[mask, :], y[mask]))
 
     def _fit_par(self, X, y: MetricData):
         super().fit(X, y)
@@ -41,23 +38,21 @@ class BaggedRegressor(WeightingRegressor):
 
     def _fit_seq(self, X, y: MetricData):
         super().fit(X, y)
-        it = tqdm(range(self.n_estimators))
-        self.estimators = [ self._fit_est(X, y) for _ in it]
+        self.estimators = [ self._fit_est(X, y) for _ in tqdm(range(self.n_estimators))]
         return self
 
     def fit(self, X, y: MetricData):
+        super().fit(X, y)
+        
         assert self.estimator
         self._estimator = self.estimator
-        
-        super().fit(X, y)
         
         return self._fit_seq(X, y) if self.n_jobs == 1 or not self.n_jobs else self._fit_par(X, y)
 
     def weights_for(self, x) -> np.ndarray:
         assert len(self.estimators) > 0
-        weights = np.zeros(self.estimators[0][0].shape[1])
-        for (sp_mask, estimator) in self.estimators:
+        weights = np.zeros(self.y_train_.shape[0])
+        for (mask, estimator) in self.estimators:
             est_weights = estimator.weights_for(x)
-            mask = sp_mask.toarray()[0,:]
             weights[mask] += est_weights
         return self._normalize_weights(weights / self.n_estimators, clip=True)

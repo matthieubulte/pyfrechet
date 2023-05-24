@@ -5,7 +5,7 @@ from pyfrechet.metric_spaces import MetricData
 
 class KNearestNeighbours(WeightingRegressor):
     def __init__(self, n_neighbors=3):
-        super().__init__(precompute_distances=False)
+        super().__init__()
         self.n_neighbors = n_neighbors
         self.nn = NearestNeighbors(n_neighbors=n_neighbors)
 
@@ -15,7 +15,7 @@ class KNearestNeighbours(WeightingRegressor):
         return self
 
     def weights_for(self, x):
-        mask = np.zeros(len(self.y_train_))
+        weights = np.zeros(len(self.y_train_))
         neighbors_idx = self.nn.kneighbors(np.array(x).reshape(1, -1), self.n_neighbors, False)[0]
-        mask[neighbors_idx] = 1.0
-        return self._normalize_weights(mask, sum_to_one=True)
+        weights[neighbors_idx] = 1.0
+        return self._normalize_weights(weights, sum_to_one=True)
