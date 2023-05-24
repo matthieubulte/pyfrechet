@@ -46,7 +46,7 @@ class Tree(WeightingRegressor):
                  min_split_size=5,
                  is_honest=False,
                  honesty_fraction=0.5):
-        super().__init__(precompute_distances=impurity_method is 'medoid')
+        super().__init__(precompute_distances=(impurity_method == 'medoid'))
         
         # TODO: parameter constraints, see https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/ensemble/_forest.py#L199
         self.min_split_size = min_split_size
@@ -57,17 +57,17 @@ class Tree(WeightingRegressor):
         self.root_node = None
 
     def _var(self, y):
-        if self.impurity_method is 'cart':
+        if self.impurity_method == 'cart':
             return y.frechet_medoid_var()
-        elif self.impurity_method is 'medoid':
+        elif self.impurity_method == 'medoid':
             return y.frechet_var()
         else:
             raise NotImplementedError(f'impurity_method = {self.impurity_method}')
  
     def _propose_splits(self, Xj) -> Generator[float, None, None]:
-        if self.split_type is 'greedy':
+        if self.split_type == 'greedy':
             return _greedy_propose_splits(Xj)
-        elif self.split_type is '2means':
+        elif self.split_type == '2means':
             return _2means_propose_splits(Xj)
         else:
             raise NotImplementedError(f'split_type = {self.split_type}')

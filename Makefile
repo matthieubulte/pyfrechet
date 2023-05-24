@@ -4,4 +4,7 @@ init:
 test:
 	py.test tests
 
-.PHONY: init test
+lint:
+	ruff --format=github --select=E9,F63,F7,F82 --target-version=py37 .
+
+.PHONY: init lint test
