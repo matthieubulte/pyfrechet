@@ -2,6 +2,7 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 from typing import Optional
 import sklearn
+from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
 from pyfrechet.metric_spaces.utils import *
@@ -28,7 +29,7 @@ class BaggedRegressor(WeightingRegressor):
 
     def _fit_est(self, X, y):
         mask = self._make_mask(X.shape[0])
-        return (mask, sklearn.clone(self.estimator).fit(X[mask, :], y[mask]))
+        return (coo_array(mask), sklearn.clone(self.estimator).fit(X[mask, :], y[mask]))
 
     def _fit_par(self, X, y: MetricData):
         super().fit(X, y)
@@ -48,8 +49,9 @@ class BaggedRegressor(WeightingRegressor):
 
     def weights_for(self, x):
         assert len(self.estimators) > 0
-        weights = np.zeros(len(self.estimators[0][0]))
-        for (mask, estimator) in self.estimators:
+        weights = np.zeros(self.estimators[0][0].shape[1])
+        for (sp_mask, estimator) in self.estimators:
             est_weights = estimator.weights_for(x)
+            mask = sp_mask.toarray()[0,:]
             weights[mask] += est_weights
         return self._normalize_weights(weights / self.n_estimators, clip=True)

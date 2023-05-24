@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Generator
 
 from sklearn.cluster import KMeans
+from scipy.sparse import coo_array
 
 from pyfrechet.metric_spaces import MetricData
 from pyfrechet.metric_spaces.utils import *
@@ -122,19 +123,35 @@ class Tree(WeightingRegressor, metaclass=ABCMeta):
                 node.right = Node(node.selector & (~split_selector), None, None, None)
                 queue.append(node.left)
                 queue.append(node.right)
+                # free up space by removing selectors not needed in the nodes
+                node.selector = None
+            else:
+                # free up space by using a sparse array for the selector
+                node.selector = coo_array(node.selector)
+
         return self
+    
+    def cleanup_selectors(self):
+        queue = [self.root_node]
+        while queue:
+            node = queue.pop(0)
+            if node and node.split:
+                node.selector = None
+                queue.append(node.left)
+                queue.append(node.right)
+
 
     def weights_for(self, x):
         assert self.root_node
         node = self.root_node
         while True:
             if not node.split:
-                return self._normalize_weights(0.0+node.selector, sum_to_one=True, clip=True)
+                return self._normalize_weights(node.selector.astype(np.float32).toarray()[0,:], sum_to_one=True, clip=True)
             elif x[node.split.feature_idx] < node.split.threshold:
                 node = node.left
             else:
                 node = node.right
-
+        
 
 class MedoidTree(MedoidVarMixin, GreedySplitMixin, Tree):
     pass
