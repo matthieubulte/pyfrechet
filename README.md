@@ -1,4 +1,7 @@
 # pyfréchet
+![tests.yml](https://github.com/matthieubulte/pyfrechet/actions/workflows/tests.yml/badge.svg)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 
 *pyfréchet* is a Python module designed for the manipulation and analysis of data in metric spaces. It provides useful classes and methods for those looking to analyze non-standard data or develop new algorithms.
 
