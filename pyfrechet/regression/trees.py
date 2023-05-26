@@ -9,6 +9,12 @@ from .weighting_regressor import WeightingRegressor
 
 
 @dataclass
+class HonestIndices:
+    fit_idx: np.ndarray
+    predict_idx: np.ndarray
+
+
+@dataclass
 class Split:
     feature_idx: int
     threshold: float
@@ -17,7 +23,7 @@ class Split:
 
 @dataclass
 class Node:
-    selector: np.ndarray
+    selector: HonestIndices
     split: Split
     left: 'Node'
     right: 'Node'
@@ -96,34 +102,47 @@ class Tree(WeightingRegressor):
 
         return None if split_imp is np.inf else Split(split_j, split_val, split_imp)
 
-    def fit(self, X, y: MetricData, basemask=None):
+    def _split_to_idx(self, X, node):
+        split = node.split
+        sel = node.selector
+
+        # fit part
+        left_idx_fit = sel.fit_idx[X[sel.fit_idx, split.feature_idx] < split.threshold]
+        right_idx_fit = sel.fit_idx[X[sel.fit_idx, split.feature_idx] >= split.threshold]
+
+        # predict part
+        left_idx_pred = sel.predict_idx[X[sel.predict_idx, split.feature_idx] < split.threshold]
+        right_idx_pred = sel.predict_idx[X[sel.predict_idx, split.feature_idx] >= split.threshold]
+        
+        # merge back into HonestIndices
+        return (HonestIndices(left_idx_fit, left_idx_pred), HonestIndices(right_idx_fit, right_idx_pred))
+
+    def _init_idx(self, N):
+        if self.is_honest:
+            s = int(self.honesty_fraction * N)
+            perm = np.random.permutation(N)
+            return HonestIndices(perm[:s], perm[s:])
+        else:
+            all_idx = np.arange(N)
+            return HonestIndices(all_idx, all_idx)
+
+    def fit(self, X, y: MetricData):
         super().fit(X, y)
 
         N = X.shape[0]
-        # self.train_mask = np.repeat(True, N)
-
-        # if self.is_honest:
-            
-        #     n_train_set = int(self.honesty_fraction * X.shape[0])
-        #     self.train_mask = 
-
-
-        if basemask is None:
-            basemask = np.arange(N)
-
-        root = Node(basemask, None, None, None)
+        
+        root = Node(self._init_idx(N), None, None, None)
         self.root_node = root
         queue = [root]
         while queue:
             node = queue.pop(0)
-            split = self._find_split(X[node.selector, :], y[node.selector])
+            split = self._find_split(X[node.selector.fit_idx, :], y[node.selector.fit_idx])
             if split:
-                left_selector = node.selector[X[node.selector, split.feature_idx] < split.threshold]
-                right_selector = node.selector[X[node.selector, split.feature_idx] >= split.threshold]
-
                 node.split = split
-                node.left = Node(left_selector, None, None, None)
-                node.right = Node(right_selector, None, None, None)
+                left_indices, right_indices = self._split_to_idx(X, node)
+
+                node.left = Node(left_indices, None, None, None)
+                node.right = Node(right_indices, None, None, None)
                 queue.append(node.left)
                 queue.append(node.right)
                 # free up space by removing selectors not needed in the nodes
@@ -150,7 +169,7 @@ class Tree(WeightingRegressor):
         node = self.root_node
         while True:
             if not node.split:
-                return self._normalize_weights(self._selector_to_weights(node.selector), sum_to_one=True, clip=True)
+                return self._normalize_weights(self._selector_to_weights(node.selector.predict_idx), sum_to_one=True, clip=True)
             elif x[node.split.feature_idx] < node.split.threshold:
                 node = node.left
             else:
