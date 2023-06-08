@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generator
+from typing import Generator, Optional
 
 from sklearn.cluster import KMeans
 
@@ -24,13 +24,17 @@ class Split:
 @dataclass
 class Node:
     selector: HonestIndices
-    split: Split
-    left: 'Node'
-    right: 'Node'
+    split: Optional[Split]
+    left: Optional['Node']
+    right: Optional['Node']
 
 
 def _2means_propose_splits(X_j):
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(X_j.reshape((X_j.shape[0], 1)))
+    kmeans = KMeans(
+        n_clusters=2,
+        random_state=0, 
+        n_init=1
+    ).fit(X_j.reshape((X_j.shape[0], 1)))
     assert not kmeans.labels_ is None
     sel = kmeans.labels_.astype(bool)
     if kmeans.cluster_centers_[0, 0] < kmeans.cluster_centers_[1, 0]:
@@ -64,9 +68,9 @@ class Tree(WeightingRegressor):
 
     def _var(self, y):
         if self.impurity_method == 'cart':
-            return y.frechet_medoid_var()
-        elif self.impurity_method == 'medoid':
             return y.frechet_var()
+        elif self.impurity_method == 'medoid':
+            return y.frechet_medoid_var()
         else:
             raise NotImplementedError(f'impurity_method = {self.impurity_method}')
  
@@ -149,15 +153,6 @@ class Tree(WeightingRegressor):
                 node.selector = None
 
         return self
-    
-    def cleanup_selectors(self):
-        queue = [self.root_node]
-        while queue:
-            node = queue.pop(0)
-            if node and node.split:
-                node.selector = None
-                queue.append(node.left)
-                queue.append(node.right)
 
     def _selector_to_weights(self, selector):
         weights = np.zeros(self.y_train_.shape[0])
@@ -167,7 +162,7 @@ class Tree(WeightingRegressor):
     def weights_for(self, x):
         assert self.root_node
         node = self.root_node
-        while True:
+        while True and node:
             if not node.split:
                 return self._normalize_weights(self._selector_to_weights(node.selector.predict_idx), sum_to_one=True, clip=True)
             elif x[node.split.feature_idx] < node.split.threshold:

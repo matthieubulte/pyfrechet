@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from typing import Union
 import numpy as np
 from .utils import coalesce_weights
 
@@ -11,7 +12,7 @@ class MetricSpace(metaclass=ABCMeta):
     def _d(self, x, y) -> float:
         pass
 
-    def d(self, x, y):
+    def d(self, x, y) -> Union[float, np.ndarray]:
         x_is_md = type(x).__name__ == 'MetricData'
         y_is_md = type(y).__name__ == 'MetricData'
         if not (x_is_md or y_is_md):

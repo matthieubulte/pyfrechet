@@ -26,6 +26,7 @@ def gen_sphere(n):
     return Sphere(dim-1), y / np.linalg.norm(y, axis=1)[:,None]
 
 def gen_fr_phase(n):
+    # todo: these are not warping fns
     # normal pdf with random mean/var
     grid = np.linspace(0, 1, 100)
     rand_mu = lambda: np.random.rand()
