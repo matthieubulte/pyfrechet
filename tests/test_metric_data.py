@@ -32,7 +32,7 @@ def gen_fr_phase(n):
     rand_mu = lambda: np.random.rand()
     rand_sig = lambda: np.random.randn()**2
     y_data = np.array([  norm.pdf(grid, rand_mu(), rand_sig()) for _ in range(n) ])
-    return FisherRaoPhase(grid), skfda.FDataGrid(y_data, grid)
+    return FisherRaoPhase(grid), y_data
 
 def gen_wasserstein(n):
     # beta quantiles with random parameters
