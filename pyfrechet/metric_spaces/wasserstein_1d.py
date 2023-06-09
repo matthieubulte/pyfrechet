@@ -24,3 +24,7 @@ def noise(J=5, grid=Wasserstein1D.GRID):
     U = np.sort(np.random.uniform(size=J-1))
     T = np.array([ _T(_K()) for _ in range(J) ])
     return U[0] * T[0,:] + np.dot(U[1:] - U[:-1], T[1:-1, :]) + (1 - U[-1]) * T[-1,:]
+
+def noise_2(x, l=4):
+    k = np.random.randint(1, l) * (2*np.random.randint(0, 1) - 1)
+    return x - np.sin(np.pi * k * x) / (np.pi*abs(k))

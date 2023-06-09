@@ -20,16 +20,25 @@ def make_forest_df(df, n_cores=20, n_trees=100, Ns=[100,200,400]):
 
 
 def plot_forest_df(forest_df, ref_method=None):
+    sns.set_style("whitegrid")
+    sns.set_context("paper")
+
     forest_df = forest_df.copy()
-    grid = sns.FacetGrid(forest_df, col="N", hue="method", palette="tab20c",)
+
+    forest_df['Method'] = forest_df.method.map({
+        'cart_2means': 'RFWLCFR',
+        'medoid_greedy': 'MRF'
+    })
+
+    grid = sns.FacetGrid(forest_df, col="N", hue="Method", palette="tab20c",)
 
     if ref_method:
-        ylabel = 'rel duration'
+        ylabel = 'relative duration'
 
         for N in forest_df['N'].unique():
             forest_df.loc[forest_df['N'] == N, 'duration'] /= forest_df[(forest_df['N'] == N) & (forest_df['p'] == 2) & (forest_df.method == ref_method)].duration.iloc[0]
     else:
-        ylabel = 'duration'
+        ylabel = 'Duration (s)'
 
     # forest_df['duration'] = np.log10(forest_df['duration'])
 
@@ -37,5 +46,32 @@ def plot_forest_df(forest_df, ref_method=None):
     grid.axes[0][0].set_ylabel(ylabel)
 
     grid.add_legend()
+
+    sns.move_legend(grid, "upper right", ncol=1, frameon=True, bbox_to_anchor=(1, 0.95))
+    # sns.move_legend(
+    #     grid, "lower center",
+    #     bbox_to_anchor=(.5, -0.02), ncol=3, title=None, frameon=False,
+    # )
+
     return grid
 
+
+def plot_errors(df):
+    df = df.copy().rename(columns={ 'err': 'MSE' })
+    df['Method'] = df.method.map({
+        'cart_2means': 'RFWLCFR',
+        'medoid_greedy': 'MRF'
+    })
+    sns.set_style("whitegrid")
+    sns.set_context("paper")
+
+    grid = sns.catplot(df,
+        x='N', y='MSE',
+        col="p", col_wrap=2, 
+        hue="Method",
+        kind='box')
+
+    sns.move_legend(
+        grid, "lower center",
+        bbox_to_anchor=(.5, -0.02), ncol=3, title=None, frameon=False,
+    )
