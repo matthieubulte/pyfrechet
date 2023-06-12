@@ -27,16 +27,22 @@ def plot_forest_df(forest_df, ref_method=None):
 
     forest_df['Method'] = forest_df.method.map({
         'cart_2means': 'RFWLCFR',
-        'medoid_greedy': 'MRF'
+        'medoid_greedy': 'MRF',
+        'medoid_2means': 'MRF2M'
     })
 
-    grid = sns.FacetGrid(forest_df, col="N", hue="Method", palette="tab20c",)
+    grid = sns.FacetGrid(forest_df, col="N", hue="Method")
 
     if ref_method:
         ylabel = 'relative duration'
 
+        # for N in forest_df['N'].unique():
+        #     forest_df.loc[forest_df['N'] == N, 'duration'] /= forest_df[(forest_df['N'] == N) & (forest_df['p'] == 2) & (forest_df.method == ref_method)].duration.iloc[0]
+
         for N in forest_df['N'].unique():
-            forest_df.loc[forest_df['N'] == N, 'duration'] /= forest_df[(forest_df['N'] == N) & (forest_df['p'] == 2) & (forest_df.method == ref_method)].duration.iloc[0]
+            for p in forest_df['p'].unique():
+                sel = (forest_df['p'] == p) & (forest_df['N'] == N)
+                forest_df.loc[sel, 'duration'] /= forest_df[sel & (forest_df.method == ref_method)].duration.iloc[0]
     else:
         ylabel = 'Duration (s)'
 
@@ -44,10 +50,14 @@ def plot_forest_df(forest_df, ref_method=None):
 
     grid.map(plt.plot, "p", 'duration', marker="o")
     grid.axes[0][0].set_ylabel(ylabel)
+    
+    for ax in grid.axes[0]:
+        ax.grid(axis='x')
 
-    grid.add_legend()
 
-    sns.move_legend(grid, "upper right", ncol=1, frameon=True, bbox_to_anchor=(1, 0.95))
+    # grid.add_legend()
+
+    # sns.move_legend(grid, "upper right", ncol=1, frameon=True, bbox_to_anchor=(1, 0.95))
     # sns.move_legend(
     #     grid, "lower center",
     #     bbox_to_anchor=(.5, -0.02), ncol=3, title=None, frameon=False,
@@ -60,14 +70,15 @@ def plot_errors(df):
     df = df.copy().rename(columns={ 'err': 'MSE' })
     df['Method'] = df.method.map({
         'cart_2means': 'RFWLCFR',
-        'medoid_greedy': 'MRF'
+        'medoid_greedy': 'MRF',
+        'medoid_2means': 'MRF2M'
     })
     sns.set_style("whitegrid")
     sns.set_context("paper")
 
     grid = sns.catplot(df,
         x='N', y='MSE',
-        col="p", col_wrap=2, 
+        col="p",
         hue="Method",
         kind='box')
 
