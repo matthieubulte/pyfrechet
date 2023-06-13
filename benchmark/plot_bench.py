@@ -21,8 +21,10 @@ def make_forest_df(df, n_cores=20, n_trees=100, Ns=[100,200,400]):
 
 def plot_forest_df(forest_df, ref_method=None):
     sns.set_style("whitegrid")
-    sns.set_context("paper")
-
+    sns.set_context("paper", rc={
+        "axes.labelsize": 20,
+        "xtick.labelsize": 20
+    })   
     forest_df = forest_df.copy()
 
     forest_df['Method'] = forest_df.method.map({
@@ -53,6 +55,7 @@ def plot_forest_df(forest_df, ref_method=None):
     
     for ax in grid.axes[0]:
         ax.grid(axis='x')
+        ax.set_xticks(forest_df['p'].unique())
 
 
     # grid.add_legend()
@@ -74,15 +77,21 @@ def plot_errors(df):
         'medoid_2means': 'MRF2M'
     })
     sns.set_style("whitegrid")
-    sns.set_context("paper")
+    sns.set_context("paper", rc={
+        "axes.labelsize": 20,
+        "xtick.labelsize": 20
+    })   
+    
 
     grid = sns.catplot(df,
         x='N', y='MSE',
         col="p",
         hue="Method",
         kind='box')
-
-    sns.move_legend(
-        grid, "lower center",
-        bbox_to_anchor=(.5, -0.02), ncol=3, title=None, frameon=False,
-    )
+    
+    grid._legend.remove()
+    
+    # sns.move_legend(
+    #     grid, "lower center",
+    #     bbox_to_anchor=(.5, -0.02), ncol=3, title=None, frameon=False,
+    # )
