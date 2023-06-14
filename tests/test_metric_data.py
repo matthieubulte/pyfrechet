@@ -2,9 +2,8 @@ if __name__ == "__main__":
     from context import *
 
 import pytest
-import skfda
 import numpy as np
-from scipy.stats import beta, norm
+from scipy.stats import beta, norm, logistic
 from pyfrechet.metric_spaces import *
 
 def gen_euclidean(n): return Euclidean(5), np.random.rand(n*5).reshape((n, 5))
@@ -26,13 +25,13 @@ def gen_sphere(n):
     return Sphere(dim-1), y / np.linalg.norm(y, axis=1)[:,None]
 
 def gen_fr_phase(n):
-    # todo: these are not warping fns
-    # normal pdf with random mean/var
     grid = np.linspace(0, 1, 100)
-    rand_mu = lambda: np.random.rand()
-    rand_sig = lambda: np.random.randn()**2
-    y_data = np.array([  norm.pdf(grid, rand_mu(), rand_sig()) for _ in range(n) ])
-    return FisherRaoPhase(grid), skfda.FDataGrid(y_data, grid)
+    def rand_gamma():
+        eta = np.random.randn()
+        a = 3 * logistic.cdf(eta) - 1.5
+        return (np.exp(4*(a * grid)) - 1) / (np.exp(4*a) - 1)
+
+    return FisherRaoPhase(grid), np.array([  rand_gamma() for _ in range(n) ])
 
 def gen_wasserstein(n):
     # beta quantiles with random parameters
