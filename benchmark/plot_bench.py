@@ -33,7 +33,11 @@ def plot_forest_df(forest_df, ref_method=None):
         'medoid_2means': 'MRF2M'
     })
 
-    grid = sns.FacetGrid(forest_df, col="N", hue="Method")
+    grid = sns.FacetGrid(
+        forest_df,
+        col="N",
+        hue="Method",
+        hue_order=['MRF', 'RFWLCFR'])
 
     if ref_method:
         ylabel = 'relative duration'
@@ -87,6 +91,7 @@ def plot_errors(df):
         x='N', y='MSE',
         col="p",
         hue="Method",
+        hue_order=['MRF', 'RFWLCFR'],
         kind='box')
     
     grid._legend.remove()
