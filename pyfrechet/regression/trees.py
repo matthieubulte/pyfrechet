@@ -33,7 +33,7 @@ def _2means_propose_splits(X_j):
     kmeans = KMeans(
         n_clusters=2,
         random_state=0, 
-        n_init=1
+        n_init='auto'
     ).fit(X_j.reshape((X_j.shape[0], 1)))
     assert not kmeans.labels_ is None
     sel = kmeans.labels_.astype(bool)

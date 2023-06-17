@@ -42,15 +42,15 @@ def bench(
         Ns=[50, 100, 200, 400],
         replicas=50,
     ):
-    cart_2means = Tree(impurity_method='cart', split_type='2means')
-    # cart_greedy = Tree(impurity_method='cart', split_type='greedy')
-    # medoid_2means = Tree(impurity_method='medoid', split_type='2means')
-    medoid_greedy = Tree(impurity_method='medoid', split_type='greedy')
-
     results = []
     for N in Ns:
         for p in ps:
             for i in range(replicas):
+                cart_2means = Tree(impurity_method='cart', split_type='2means')
+                # cart_greedy = Tree(impurity_method='cart', split_type='greedy')
+                medoid_2means = Tree(impurity_method='medoid', split_type='2means')
+                medoid_greedy = Tree(impurity_method='medoid', split_type='greedy')
+                
                 print(f'[{str(datetime.now())}] Progress: N={N}\tp={p}\ti={i}')
                 beta = np.random.randn(p)
                 alpha = np.random.randn()
@@ -59,7 +59,7 @@ def bench(
 
                 results.append(bench_it('cart_2means', cart_2means, X_train, y_train, X_test, mx_test))
                 # results.append(bench_it('cart_greedy', cart_greedy, X_train, y_train, X_test, y_test))
-                # results.append(bench_it('medoid_2means', medoid_2means, X_train, y_train, X_test, mx_test))
+                results.append(bench_it('medoid_2means', medoid_2means, X_train, y_train, X_test, mx_test))
                 results.append(bench_it('medoid_greedy', medoid_greedy, X_train, y_train, X_test, mx_test))
 
                 with open(out_file, 'w') as f:
