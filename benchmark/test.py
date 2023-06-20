@@ -35,18 +35,14 @@ if __name__ == '__main__':
     from datetime import datetime
 
 
-    cart_2means = Tree(impurity_method='cart', split_type='2means')
-    medoid_greedy = Tree(impurity_method='medoid', split_type='greedy')
-
     results = []
     for N in [400]:
         for p in [20]:
-            for i in range(1):
-                print(f'[{str(datetime.now())}] Progress: N={N}\tp={p}\ti={i}')
-                beta = np.random.randn(p)
-                alpha = np.random.randn()
-                X_train, y_train, _ = gen_data(N, p, alpha, beta)
-                X_test, _, mx_test = gen_data(50, p, alpha, beta)
-                y_train.compute_distances()
+            beta = np.random.randn(p)
+            alpha = np.random.randn()
+            X_train, y_train, _ = gen_data(N, p, alpha, beta)
+            X_test, _, mx_test = gen_data(50, p, alpha, beta)
+            y_train.compute_distances()
+            for i in range(10):
                 # cart_2means = cart_2means.fit(X_train, y_train)
-                medoid_greedy = medoid_greedy.fit(X_train, y_train)
+                medoid_greedy = Tree(impurity_method='medoid', split_type='greedy').fit(X_train, y_train)

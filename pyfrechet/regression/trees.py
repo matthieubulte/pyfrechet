@@ -66,11 +66,12 @@ class Tree(WeightingRegressor):
         self.honesty_fraction = honesty_fraction
         self.root_node = None
 
-    def _var(self, y):
+    def _var(self, y, sel):
+        w = sel/sel.sum()
         if self.impurity_method == 'cart':
-            return y.frechet_var()
+            return y.frechet_var(weights=w)
         elif self.impurity_method == 'medoid':
-            return y.frechet_medoid_var()
+            return y.frechet_medoid_var(weights=w)
         else:
             raise NotImplementedError(f'impurity_method = {self.impurity_method}')
  
@@ -96,8 +97,8 @@ class Tree(WeightingRegressor):
                 n_r = (~sel).sum()
 
                 if min(n_l, n_r) > self.min_split_size:
-                    var_l = self._var(y[sel])
-                    var_r = self._var(y[~sel])
+                    var_l = self._var(y, sel)
+                    var_r = self._var(y, ~sel)
                     impurity = (n_l * var_l + n_r * var_r) / N
                     if impurity < split_imp:
                         split_imp = impurity
