@@ -18,6 +18,7 @@ def make_forest_df(df, n_cores=20, n_trees=100, Ns=[100,200,400], dists_ref_meth
     for N in Ns:
         for p in _df.p.unique():
             for method in _df.method.unique():
+                # print(N,p,method, O(method, N))
                 rows.append((method, N, p, TF(method, N, p, n_trees, n_cores)))
 
     return pd.DataFrame(rows, columns=['method', 'N', 'p', 'duration'])
