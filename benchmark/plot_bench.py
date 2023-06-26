@@ -3,12 +3,14 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def make_forest_df(df, n_cores=20, n_trees=100, Ns=[100,200,400], dists_ref_method=None):
+def make_forest_df(df, n_cores=20, n_trees=100, Ns=[100,200,400]):
     _df = df.groupby(['N', 'p', 'method']).mean().reset_index().copy()
     
     has_dist = lambda method: 1.0 * (method in ['medoid_2means', 'medoid_greedy'])
 
-    O = lambda method, N: has_dist(method) * _df[(_df.method == dists_ref_method) & (_df.N == N)].dist_duration.iloc[0]
+    # sometime it was medoid_2means and sometimes medoid_greedy used as a ref. Just take the one with the largest dist_duration
+    # since it's the one which actually ocmputed it
+    O = lambda method, N: has_dist(method) * _df[_df.N == N].dist_duration.max()
 
     T = lambda method, N, p: _df[(_df.method == method) & (_df.N == N) & (_df.p == p)].fitting_duration.iloc[0]
     
@@ -100,7 +102,11 @@ def plot_errors(df):
         x='N', y='MSE',
         col="p",
         hue="Method",
-        hue_order=['MRF', 'MRF2M', 'RFWLCFR'],
+        hue_order=[
+            'MRF',
+            # 'MRF2M',
+            'RFWLCFR'
+        ],
         kind='box')
     
     # grid._legend.remove()
