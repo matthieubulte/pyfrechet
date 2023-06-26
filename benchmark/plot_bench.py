@@ -32,7 +32,7 @@ def plot_forest_df(forest_df, ref_method=None):
         "axes.labelsize": 20,
         "xtick.labelsize": 20
     })   
-    forest_df = forest_df.copy()
+    forest_df = forest_df.copy().rename(columns={ 'p': 'd' })
 
     forest_df['Method'] = forest_df.method.map({
         'cart_2means': 'RFWLCFR',
@@ -65,15 +65,15 @@ def plot_forest_df(forest_df, ref_method=None):
 
     # forest_df['duration'] = np.log10(forest_df['duration'])
 
-    grid.map(plt.plot, "p", 'duration', marker="o")
+    grid.map(plt.plot, "d", 'duration', marker="o")
     grid.axes[0][0].set_ylabel(ylabel)
     
     for ax in grid.axes[0]:
         ax.grid(axis='x')
-        ax.set_xticks(forest_df['p'].unique())
+        ax.set_xticks(forest_df['d'].unique())
 
 
-    grid.add_legend()
+    # grid.add_legend()
 
     # sns.move_legend(grid, "upper right", ncol=1, frameon=True, bbox_to_anchor=(1, 0.95))
     # sns.move_legend(
@@ -85,7 +85,7 @@ def plot_forest_df(forest_df, ref_method=None):
 
 
 def plot_errors(df):
-    df = df.copy().rename(columns={ 'err': 'MSE' })
+    df = df.copy().rename(columns={ 'err': 'MSE', 'p': 'd' })
     df['Method'] = df.method.map({
         'cart_2means': 'RFWLCFR',
         'medoid_greedy': 'MRF',
@@ -100,7 +100,7 @@ def plot_errors(df):
 
     grid = sns.catplot(df,
         x='N', y='MSE',
-        col="p",
+        col="d",
         hue="Method",
         hue_order=[
             'MRF',
@@ -109,7 +109,7 @@ def plot_errors(df):
         ],
         kind='box')
     
-    # grid._legend.remove()
+    grid._legend.remove()
     # grid.add_legend()
     
     # sns.move_legend(
