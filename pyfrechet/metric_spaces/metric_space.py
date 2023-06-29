@@ -34,8 +34,9 @@ class MetricSpace(metaclass=ABCMeta):
         return self._frechet_mean(y, w)
     
     def frechet_var(self, y, w=None):
+        w = coalesce_weights(w, y)
         y_bar = self.frechet_mean(y, w=w)
-        return np.sum([ self._d(y_bar, self.index(y, i))**2 for i in range(y.shape[0]) ])
+        return np.sum([ w[i] * self._d(y_bar, self.index(y, i))**2 for i in range(y.shape[0]) ])
 
     def index(self, y, i):
         return y[i, :]
