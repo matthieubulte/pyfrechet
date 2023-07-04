@@ -64,7 +64,7 @@ def nearcorr(A, tol=[], flag=0, max_iterations=100, n_pos_eig=0,
         ds = np.zeros(np.shape(A))
 
     eps = np.spacing(1)
-    if not np.all((np.transpose(A) == A)):
+    if not np.all((A.T - A) <= tol[0]):
         raise ValueError('Input Matrix is not symmetric')
     if not tol:
         tol = eps * np.shape(A)[0] * np.array([1, 1])
