@@ -26,5 +26,5 @@ def noise(J=5, grid=Wasserstein1D.GRID):
     return U[0] * T[0,:] + np.dot(U[1:] - U[:-1], T[1:-1, :]) + (1 - U[-1]) * T[-1,:]
 
 def noise_2(x, l=4):
-    k = np.random.randint(1, l) * (2*np.random.randint(0, 1) - 1)
-    return x - np.sin(np.pi * k * x) / (np.pi*abs(k))
+    k = (1 - 2*np.random.binomial(1,0.5)) * np.random.random_integers(1, l)
+    return x - np.sin(np.pi * k * x) / (np.pi*np.abs(k))
