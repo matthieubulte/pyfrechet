@@ -20,7 +20,7 @@ setuptools.setup(
     packages=setuptools.find_packages(include="pyfrechet*"),
     python_requires=">=3.9",
     install_requires=[
-        'geomstats>=2.5.0',
+        'geomstats==2.5.0',
         'joblib>=1.2.0',
         'numpy>=1.23.5',
         'pandas>=1.5.3',
