@@ -29,7 +29,7 @@ setuptools.setup(
         'scikit_learn>=1.2.2',
         'scipy>=1.9.1'
     ],
-    extra_require={
+    extras_require={
         'fisher_rao': ['scikit_fda>=0.8', 'fdasrsf>=2.3.12']
     }
 )
