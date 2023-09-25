@@ -24,12 +24,12 @@ setuptools.setup(
         'joblib>=1.2.0',
         'numpy>=1.23.5',
         'pandas>=1.5.3',
-        'pytest>=7.2.2',
-        'requests>=2.31.0',
         'scikit_learn>=1.2.2',
         'scipy>=1.9.1'
     ],
     extras_require={
-        'fisher_rao': ['scikit_fda>=0.8', 'fdasrsf>=2.3.12']
+        'fisher_rao': ['scikit_fda>=0.8', 'fdasrsf>=2.3.12'],
+        'data_load': ['requests>=2.31.0'],
+        'test': ['pytest>=7.2.2',]
     }
 )
