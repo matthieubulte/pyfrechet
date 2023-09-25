@@ -4,6 +4,10 @@ from .euclidean import Euclidean
 from .sphere import Sphere
 from .correlation import CorrFrobenius
 from .wasserstein_1d import Wasserstein1D
-from .fisher_rao_phase import FisherRaoPhase
 from .network import NetworkCholesky
 from .riemannian_manifold import RiemannianManifold
+
+from .fisher_rao_phase import has_fda
+if has_fda:
+    from .fisher_rao_phase import FisherRaoPhase
+    
