@@ -20,16 +20,16 @@ setuptools.setup(
     packages=setuptools.find_packages(include="pyfrechet*"),
     python_requires=">=3.9",
     install_requires=[
-        'fdasrsf>=2.3.12',
         'geomstats>=2.5.0',
         'joblib>=1.2.0',
         'numpy>=1.23.5',
         'pandas>=1.5.3',
         'pytest>=7.2.2',
         'requests>=2.31.0',
-        'scikit_fda>=0.8',
         'scikit_learn>=1.2.2',
-        'scipy>=1.9.1',
-        'tqdm>=4.64.1'
-    ]
+        'scipy>=1.9.1'
+    ],
+    extra_require={
+        'fisher_rao': ['scikit_fda>=0.8', 'fdasrsf>=2.3.12']
+    }
 )
