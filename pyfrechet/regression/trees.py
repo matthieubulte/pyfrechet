@@ -53,15 +53,17 @@ class Tree(WeightingRegressor):
     def __init__(self, 
                  split_type='greedy',
                  impurity_method='cart',
+                 mtry=None,
                  min_split_size=5,
                  is_honest=False,
                  honesty_fraction=0.5):
         super().__init__(precompute_distances=(impurity_method == 'medoid'))
         
         # TODO: parameter constraints, see https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/ensemble/_forest.py#L199
-        self.min_split_size = min_split_size
-        self.impurity_method = impurity_method
         self.split_type = split_type
+        self.impurity_method = impurity_method
+        self.mtry = mtry
+        self.min_split_size = min_split_size
         self.is_honest = is_honest
         self.honesty_fraction = honesty_fraction
         self.root_node = None
@@ -83,18 +85,20 @@ class Tree(WeightingRegressor):
         else:
             raise NotImplementedError(f'split_type = {self.split_type}')
 
-    def _find_split(self, X, y: MetricData):
+    def _find_split(self, X, y: MetricData, mtry):
         N, d = X.shape
+
+        tried_features = np.random.permutation(np.arange(d))[:mtry]
 
         split_imp = np.inf
         split_j = 0
         split_val = 0
 
-        for j in range(d):
+        for j in tried_features:
             for candidate_split_val in self._propose_splits(X[:, j]):
                 sel = X[:, j] < candidate_split_val
                 n_l = sel.sum()
-                n_r = (~sel).sum()
+                n_r = N - n_l
 
                 if min(n_l, n_r) > self.min_split_size:
                     var_l = self._var(y, sel)
@@ -135,13 +139,18 @@ class Tree(WeightingRegressor):
         super().fit(X, y)
 
         N = X.shape[0]
+        d = X.shape[1]
+
+        mtry = d if self.mtry is None else self.mtry
+        if mtry > d:
+            raise Exception(f'Invalid Argument: mtry={self.mtry} but covariate dimension is {d}.')
         
         root = Node(self._init_idx(N), None, None, None)
         self.root_node = root
         queue = [root]
         while queue:
             node = queue.pop(0)
-            split = self._find_split(X[node.selector.fit_idx, :], y[node.selector.fit_idx])
+            split = self._find_split(X[node.selector.fit_idx, :], y[node.selector.fit_idx], mtry)
             if split:
                 node.split = split
                 left_indices, right_indices = self._split_to_idx(X, node)
