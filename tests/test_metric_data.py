@@ -105,7 +105,7 @@ def test_getitem__mask(gen_data):
 def test_getitem__distances(gen_data):
     M, y = gen_data(4)
     data = MetricData(M, y)
-    data.compute_distances(n_jobs=None)
+    data.compute_distances(n_jobs=1)
 
     subdata = data[[True, False, True, False]]
 
@@ -118,7 +118,7 @@ def test_getitem__distances(gen_data):
 def test_compute_distances(gen_data):
     M, y = gen_data(10)
     data = MetricData(M, y)
-    data.compute_distances(n_jobs=None)
+    data.compute_distances(n_jobs=1)
 
     assert not data.distances is None
     assert data.distances.shape == (10,10)
@@ -155,13 +155,13 @@ def test_frechet_mean_single_weighted(gen_data):
 def test_frechet_medoid(gen_data):
     M, y = gen_data(10)
     data = MetricData(M, y)
-    assert not data.frechet_medoid(n_jobs=None) is None
+    assert not data.frechet_medoid(n_jobs=1) is None
 
 @pytest.mark.parametrize("gen_data", GENERATORS)
 def test_frechet_medoid_single_item(gen_data):
     M, y = gen_data(1)
     data = MetricData(M, y)
-    assert M.d(data.frechet_medoid(n_jobs=None), data[0]) < TOL
+    assert M.d(data.frechet_medoid(n_jobs=1), data[0]) < TOL
 
 @pytest.mark.parametrize("gen_data", GENERATORS)
 def test_frechet_medoid_single_weighted(gen_data):
@@ -169,13 +169,13 @@ def test_frechet_medoid_single_weighted(gen_data):
     data = MetricData(M, y)
     weights = np.zeros(10)
     weights[5] = 1.0
-    assert M.d(data.frechet_medoid(weights, n_jobs=None), data[5]) < TOL
+    assert M.d(data.frechet_medoid(weights, n_jobs=1), data[5]) < TOL
 
 @pytest.mark.parametrize("gen_data", GENERATORS)
 def test_frechet_medoid_from_sample(gen_data):
     M, y = gen_data(10)
     data = MetricData(M, y)
-    assert np.sum(M.d(data.frechet_medoid(n_jobs=None), data) < TOL) >= 1
+    assert np.sum(M.d(data.frechet_medoid(n_jobs=1), data) < TOL) >= 1
 
 if __name__ == "__main__":
     pytest.main()

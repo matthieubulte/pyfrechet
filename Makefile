@@ -11,7 +11,7 @@ build:
 	python -m build
 
 install:
-	python3 -m pip install .
+	python3 -m pip install .[all]
 
 lint:
 	ruff --format=github --select=E9,F63,F7,F82 --target-version=py37 .

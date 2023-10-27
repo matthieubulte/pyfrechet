@@ -1,8 +1,11 @@
 import setuptools
 
+fisher_rao=['scikit_fda>=0.8', 'fdasrsf==2.4.3']
+data_load=['requests>=2.31.0']
+
 setuptools.setup(
     name="pyfrechet",
-    version="1.0.0",
+    version="1.0.1",
     author="Matthieu Bulté",
     author_email="mb@math.ku.dk",
     description="A module for the manipulation and analysis of data in metric spaces.",
@@ -28,8 +31,9 @@ setuptools.setup(
         'scipy>=1.9.1'
     ],
     extras_require={
-        'fisher_rao': ['scikit_fda>=0.8', 'fdasrsf>=2.3.12'],
-        'data_load': ['requests>=2.31.0'],
+        'fisher-rao': fisher_rao,
+        'data-load': data_load,
+        'all': fisher_rao + data_load,
         'test': ['pytest>=7.2.2',]
     }
 )
