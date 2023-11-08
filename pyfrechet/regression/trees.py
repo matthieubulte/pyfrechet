@@ -85,8 +85,9 @@ class Tree(WeightingRegressor):
         else:
             raise NotImplementedError(f'split_type = {self.split_type}')
 
-    def _find_split(self, X, y: MetricData, mtry):
+    def _find_split(self, X, X_hon, y: MetricData, mtry):
         N, d = X.shape
+        N_hon, _ = X_hon.shape
 
         tried_features = np.random.permutation(np.arange(d))[:mtry]
 
@@ -97,10 +98,15 @@ class Tree(WeightingRegressor):
         for j in tried_features:
             for candidate_split_val in self._propose_splits(X[:, j]):
                 sel = X[:, j] < candidate_split_val
+                sel_hon = X_hon[:, j] < candidate_split_val
+
                 n_l = sel.sum()
                 n_r = N - n_l
 
-                if min(n_l, n_r) > self.min_split_size:
+                n_l_hon = sel_hon.sum()
+                n_r_hon = N_hon - n_l_hon
+
+                if min(n_l, n_r, n_l_hon, n_r_hon) > self.min_split_size:
                     var_l = self._var(y, sel)
                     var_r = self._var(y, ~sel)
                     impurity = (n_l * var_l + n_r * var_r) / N
@@ -150,7 +156,7 @@ class Tree(WeightingRegressor):
         queue = [root]
         while queue:
             node = queue.pop(0)
-            split = self._find_split(X[node.selector.fit_idx, :], y[node.selector.fit_idx], mtry)
+            split = self._find_split(X[node.selector.fit_idx, :], X[node.selector.predict_idx, :], y[node.selector.fit_idx], mtry)
             if split:
                 node.split = split
                 left_indices, right_indices = self._split_to_idx(X, node)
