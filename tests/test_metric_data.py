@@ -17,7 +17,12 @@ def gen_corr_matrices(n):
 
     dim = 5
     y = np.array([ random_corr_matrix(dim) for i in range(n) ])
-    return CorrFrobenius(5), y
+    return CorrFrobenius(dim), y
+
+def gen_log_cholesky(n):
+    dim = 5
+    n_entries =int(dim*(dim + 1)/2)
+    return LogCholesky(dim), np.random.rand(n*n_entries).reshape((n,n_entries))
 
 def gen_sphere(n): 
     dim = 4
@@ -47,7 +52,8 @@ GENERATORS = [
     gen_euclidean,
     gen_corr_matrices,
     gen_wasserstein,
-    gen_fr_phase
+    gen_fr_phase,
+    gen_log_cholesky
 ]
 
 @pytest.mark.parametrize("gen_data", GENERATORS)

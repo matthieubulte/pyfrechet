@@ -6,3 +6,4 @@ playground
 build/
 dist/
 *.egg-info/
+.history/

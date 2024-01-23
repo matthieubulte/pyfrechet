@@ -32,8 +32,8 @@ class Node:
 def _2means_propose_splits(X_j):
     kmeans = KMeans(
         n_clusters=2,
-        random_state=0, 
-        n_init='auto'
+        n_init=1,
+        max_iter=10
     ).fit(X_j.reshape((X_j.shape[0], 1)))
     assert not kmeans.labels_ is None
     sel = kmeans.labels_.astype(bool)
@@ -49,6 +49,9 @@ def _greedy_propose_splits(X_j):
         yield X_j[i]
 
 
+        
+
+
 class Tree(WeightingRegressor):
     def __init__(self, 
                  split_type='greedy',
@@ -58,7 +61,6 @@ class Tree(WeightingRegressor):
                  is_honest=False,
                  honesty_fraction=0.5):
         super().__init__(precompute_distances=(impurity_method == 'medoid'))
-        
         # TODO: parameter constraints, see https://github.com/scikit-learn/scikit-learn/blob/364c77e047ca08a95862becf40a04fe9d4cd2c98/sklearn/ensemble/_forest.py#L199
         self.split_type = split_type
         self.impurity_method = impurity_method
