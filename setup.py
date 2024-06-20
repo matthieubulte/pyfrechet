@@ -5,7 +5,7 @@ data_load=['requests>=2.31.0']
 
 setuptools.setup(
     name="pyfrechet",
-    version="1.0.2",
+    version="1.0.3",
     author="Matthieu Bulté",
     author_email="mb@math.ku.dk",
     description="A module for the manipulation and analysis of data in metric spaces.",
