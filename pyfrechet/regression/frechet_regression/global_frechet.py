@@ -17,5 +17,5 @@ class GlobalFrechet(WeightingRegressor):
         return self
 
     def weights_for(self, x):
-        S_inv_dx = cho_solve(self.Sigma_chol_, (x - self.mu_).T).T
-        return self._normalize_weights(1 + np.sum(S_inv_dx * self.centered_x_train_, axis=1), sum_to_one=True, clip=True)
+        S_inv_dx = cho_solve(self.Sigma_chol_, x - self.mu_)
+        return (1 + self.centered_x_train_ @ S_inv_dx)/self.centered_x_train_.shape[0]
